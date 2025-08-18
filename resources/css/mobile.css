@@ -1,0 +1,376 @@
+/* Mobile-specific optimizations for PlayCanvas integration */
+
+/* Prevent zoom on input focus (iOS Safari) */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+    font-size: 16px !important;
+}
+
+/* Smooth scrolling for mobile */
+html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Optimize touch interactions */
+.touch-optimized {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* Mobile-first button styling */
+.mobile-btn {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    touch-action: manipulation;
+}
+
+.mobile-btn:active {
+    transform: scale(0.95);
+}
+
+/* Mobile modal optimizations */
+.mobile-modal-backdrop {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.mobile-modal-panel {
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Chat message optimizations */
+.mobile-message {
+    max-width: 85%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* Input field optimizations */
+.mobile-input-field {
+    border-radius: 20px;
+    padding: 12px 16px;
+    font-size: 16px;
+    line-height: 1.5;
+    resize: none;
+    transition: border-color 0.2s ease;
+}
+
+.mobile-input-field:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Loading states */
+.mobile-loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #374151;
+    border-top: 2px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Haptic feedback simulation */
+.haptic-light:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+}
+
+.haptic-medium:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+
+.haptic-strong:active {
+    transform: scale(0.92);
+    transition: transform 0.15s ease;
+}
+
+/* Safe area handling */
+.safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-inset-left {
+    padding-left: env(safe-area-inset-left);
+}
+
+.safe-area-inset-right {
+    padding-right: env(safe-area-inset-right);
+}
+
+/* Landscape orientation adjustments */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+    .landscape-compact {
+        padding: 8px !important;
+    }
+    
+    .landscape-compact .mobile-message {
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+    
+    .landscape-compact .mobile-input-field {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    .landscape-compact .mobile-btn {
+        min-height: 36px;
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .mobile-icon {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+}
+
+/* Dark mode optimizations for mobile */
+@media (prefers-color-scheme: dark) {
+    .mobile-surface {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+    
+    .mobile-text {
+        color: #f9fafb;
+    }
+    
+    .mobile-text-secondary {
+        color: #9ca3af;
+    }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .mobile-transition,
+    .haptic-light,
+    .haptic-medium,
+    .haptic-strong {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Focus visible for keyboard navigation */
+.mobile-focusable:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Scrollbar styling for mobile webkit */
+.mobile-scrollable::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mobile-scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.mobile-scrollable::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 2px;
+}
+
+.mobile-scrollable::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.7);
+}
+
+/* PlayCanvas-specific mobile optimizations */
+.playcanvas-preview-mobile {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+    background: #000;
+}
+
+.playcanvas-controls-mobile {
+    position: fixed;
+    bottom: env(safe-area-inset-bottom, 20px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.playcanvas-control-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+}
+
+.playcanvas-control-btn:active {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0.95);
+}
+
+/* Demo template cards mobile optimization */
+.demo-card-mobile {
+    background: #374151;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid #4b5563;
+    transition: all 0.2s ease;
+    touch-action: manipulation;
+}
+
+.demo-card-mobile:active {
+    transform: scale(0.98);
+    background: #4b5563;
+}
+
+.demo-card-mobile .demo-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+}
+
+.demo-card-mobile .demo-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f9fafb;
+    margin-bottom: 4px;
+}
+
+.demo-card-mobile .demo-description {
+    font-size: 14px;
+    color: #9ca3af;
+    line-height: 1.4;
+}
+
+.demo-card-mobile .demo-tags {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.demo-card-mobile .demo-tag {
+    font-size: 12px;
+    padding: 4px 8px;
+    background: #1e40af;
+    color: #bfdbfe;
+    border-radius: 6px;
+}
+
+/* Suggestion chips mobile styling */
+.suggestion-chip-mobile {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    white-space: nowrap;
+    touch-action: manipulation;
+    transition: all 0.2s ease;
+}
+
+.suggestion-chip-mobile:active {
+    background: #2563eb;
+    transform: scale(0.95);
+}
+
+/* Credit badge mobile styling */
+.credit-badge-mobile {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.credit-badge-mobile.high {
+    background: #065f46;
+    color: #6ee7b7;
+}
+
+.credit-badge-mobile.medium {
+    background: #92400e;
+    color: #fcd34d;
+}
+
+.credit-badge-mobile.low {
+    background: #991b1b;
+    color: #fca5a5;
+}
+
+/* Mobile workspace status indicator */
+.workspace-status-mobile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.workspace-status-mobile .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.workspace-status-mobile .status-dot.ready {
+    background: #10b981;
+}
+
+.workspace-status-mobile .status-dot.building {
+    background: #f59e0b;
+    animation: pulse 2s infinite;
+}
+
+.workspace-status-mobile .status-dot.error {
+    background: #ef4444;
+}

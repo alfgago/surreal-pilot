@@ -1,0 +1,18 @@
+{
+  "name": "surreal-pilot-puppeteer-mcp",
+  "version": "1.0.0",
+  "description": "Puppeteer MCP Server for SurrealPilot automated game testing",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "puppeteer": "^23.0.0",
+    "express": "^4.18.0"
+  },
+  "author": "SurrealPilot",
+  "license": "MIT"
+}

@@ -1,0 +1,9 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="12" fill="#6B7280"/>
+  <path d="M20 20h24v24H20V20z" stroke="white" stroke-width="2" fill="none"/>
+  <circle cx="26" cy="26" r="2" fill="white"/>
+  <circle cx="38" cy="26" r="2" fill="white"/>
+  <circle cx="26" cy="38" r="2" fill="white"/>
+  <circle cx="38" cy="38" r="2" fill="white"/>
+  <text x="32" y="52" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="6" font-weight="bold">ENGINE</text>
+</svg>

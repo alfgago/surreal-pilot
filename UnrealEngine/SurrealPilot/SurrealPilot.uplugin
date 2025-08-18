@@ -1,0 +1,44 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "SurrealPilot",
+	"Description": "AI copilot for Unreal Engine development with intelligent assistance and automated fixes",
+	"Category": "Developer Tools",
+	"CreatedBy": "SurrealPilot Team",
+	"CreatedByURL": "https://surrealpilot.com",
+	"DocsURL": "https://docs.surrealpilot.com",
+	"MarketplaceURL": "",
+	"SupportURL": "https://support.surrealpilot.com",
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "SurrealPilot",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"Core",
+				"CoreUObject",
+				"EditorStyle",
+				"EditorWidgets",
+				"UnrealEd",
+				"ToolMenus",
+				"Slate",
+				"SlateCore",
+				"HTTP",
+				"Json",
+				"JsonObjectConverter"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "EditorScriptingUtilities",
+			"Enabled": true
+		}
+	]
+}

@@ -1,0 +1,732 @@
+{
+  "config": {
+    "configFile": "C:\\laragon\\www\\surreal-pilot\\playwright.config.js",
+    "rootDir": "C:/laragon/www/surreal-pilot/tests/Playwright",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 5
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "html",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/mobile-test-results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "test-results/mobile-junit.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "C:/laragon/www/surreal-pilot/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "Mobile Safari",
+        "name": "Mobile Safari",
+        "testDir": "C:/laragon/www/surreal-pilot/tests/Playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/laragon/www/surreal-pilot/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "Mobile Chrome",
+        "name": "Mobile Chrome",
+        "testDir": "C:/laragon/www/surreal-pilot/tests/Playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/laragon/www/surreal-pilot/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "iPad",
+        "name": "iPad",
+        "testDir": "C:/laragon/www/surreal-pilot/tests/Playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/laragon/www/surreal-pilot/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "Desktop Chrome",
+        "name": "Desktop Chrome",
+        "testDir": "C:/laragon/www/surreal-pilot/tests/Playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "C:/laragon/www/surreal-pilot/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 5
+        },
+        "id": "Desktop Safari",
+        "name": "Desktop Safari",
+        "testDir": "C:/laragon/www/surreal-pilot/tests/Playwright",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.54.2",
+    "workers": 8,
+    "webServer": {
+      "command": "php artisan serve",
+      "url": "http://surreal-pilot.local",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "claude-sonnet-4-flow.spec.js",
+      "file": "claude-sonnet-4-flow.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "SurrealPilot Claude Sonnet 4 Flow Test",
+          "file": "claude-sonnet-4-flow.spec.js",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "complete user journey: register → login → generate game with Claude Sonnet 4",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Safari",
+                  "projectName": "Mobile Safari",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 29124,
+                      "error": {
+                        "message": "Error: Could not find chat input interface",
+                        "stack": "Error: Could not find chat input interface\n    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13",
+                        "location": {
+                          "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                          "column": 13,
+                          "line": 277
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                            "column": 13,
+                            "line": 277
+                          },
+                          "message": "Error: Could not find chat input interface\n\n\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m\n\u001b[2m    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test\n"
+                        },
+                        {
+                          "text": "📱 Step 1: Navigating to SurrealPilot homepage...\n"
+                        },
+                        {
+                          "text": "✅ Homepage loaded and screenshot saved\n"
+                        },
+                        {
+                          "text": "📄 Page title: \"SurrealPilot Desktop\"\n"
+                        },
+                        {
+                          "text": "🏢 Step 2: Accessing Filament company panel...\n"
+                        },
+                        {
+                          "text": "📍 Current URL: http://surreal-pilot.local/company/login\n"
+                        },
+                        {
+                          "text": "🔓 Authentication required - attempting registration...\n"
+                        },
+                        {
+                          "text": "📝 Found register link - clicking...\n"
+                        },
+                        {
+                          "text": "📋 Filling registration form...\n"
+                        },
+                        {
+                          "text": "🤖 Step 4: Looking for AI chat interface...\n"
+                        },
+                        {
+                          "text": "🔍 No chat input visible - looking for navigation...\n"
+                        },
+                        {
+                          "text": "📍 Found navigation: text=AI\n"
+                        },
+                        {
+                          "text": "❌ No chat input found on any page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-16T16:50:52.940Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Safari\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Safari\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Safari\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                        "column": 13,
+                        "line": 277
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6e549f4dacf0efde8249-c6328efb0e8aa39c9769",
+              "file": "claude-sonnet-4-flow.spec.js",
+              "line": 6,
+              "column": 3
+            },
+            {
+              "title": "complete user journey: register → login → generate game with Claude Sonnet 4",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Mobile Chrome",
+                  "projectName": "Mobile Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 1,
+                      "status": "failed",
+                      "duration": 25419,
+                      "error": {
+                        "message": "Error: Could not find chat input interface",
+                        "stack": "Error: Could not find chat input interface\n    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13",
+                        "location": {
+                          "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                          "column": 13,
+                          "line": 277
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                            "column": 13,
+                            "line": 277
+                          },
+                          "message": "Error: Could not find chat input interface\n\n\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m\n\u001b[2m    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test\n"
+                        },
+                        {
+                          "text": "📱 Step 1: Navigating to SurrealPilot homepage...\n"
+                        },
+                        {
+                          "text": "✅ Homepage loaded and screenshot saved\n"
+                        },
+                        {
+                          "text": "📄 Page title: \"SurrealPilot Desktop\"\n"
+                        },
+                        {
+                          "text": "🏢 Step 2: Accessing Filament company panel...\n"
+                        },
+                        {
+                          "text": "📍 Current URL: http://surreal-pilot.local/company/login\n"
+                        },
+                        {
+                          "text": "🔓 Authentication required - attempting registration...\n"
+                        },
+                        {
+                          "text": "📝 Found register link - clicking...\n"
+                        },
+                        {
+                          "text": "📋 Filling registration form...\n"
+                        },
+                        {
+                          "text": "🤖 Step 4: Looking for AI chat interface...\n"
+                        },
+                        {
+                          "text": "🔍 No chat input visible - looking for navigation...\n"
+                        },
+                        {
+                          "text": "📍 Found navigation: text=AI\n"
+                        },
+                        {
+                          "text": "❌ No chat input found on any page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-16T16:50:53.013Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Chrome\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Chrome\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Chrome\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                        "column": 13,
+                        "line": 277
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6e549f4dacf0efde8249-bf2a30e14ed2f5780ff3",
+              "file": "claude-sonnet-4-flow.spec.js",
+              "line": 6,
+              "column": 3
+            },
+            {
+              "title": "complete user journey: register → login → generate game with Claude Sonnet 4",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "iPad",
+                  "projectName": "iPad",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 2,
+                      "status": "failed",
+                      "duration": 25004,
+                      "error": {
+                        "message": "Error: Could not find chat input interface",
+                        "stack": "Error: Could not find chat input interface\n    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13",
+                        "location": {
+                          "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                          "column": 13,
+                          "line": 277
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                            "column": 13,
+                            "line": 277
+                          },
+                          "message": "Error: Could not find chat input interface\n\n\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m\n\u001b[2m    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test\n"
+                        },
+                        {
+                          "text": "📱 Step 1: Navigating to SurrealPilot homepage...\n"
+                        },
+                        {
+                          "text": "✅ Homepage loaded and screenshot saved\n"
+                        },
+                        {
+                          "text": "📄 Page title: \"SurrealPilot Desktop\"\n"
+                        },
+                        {
+                          "text": "🏢 Step 2: Accessing Filament company panel...\n"
+                        },
+                        {
+                          "text": "📍 Current URL: http://surreal-pilot.local/company/login\n"
+                        },
+                        {
+                          "text": "🔓 Authentication required - attempting registration...\n"
+                        },
+                        {
+                          "text": "📝 Found register link - clicking...\n"
+                        },
+                        {
+                          "text": "📋 Filling registration form...\n"
+                        },
+                        {
+                          "text": "🤖 Step 4: Looking for AI chat interface...\n"
+                        },
+                        {
+                          "text": "🔍 No chat input visible - looking for navigation...\n"
+                        },
+                        {
+                          "text": "📍 Found navigation: text=AI\n"
+                        },
+                        {
+                          "text": "❌ No chat input found on any page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-16T16:50:52.884Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-iPad\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-iPad\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-iPad\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                        "column": 13,
+                        "line": 277
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6e549f4dacf0efde8249-6dd3c3d44f3ead2e8be8",
+              "file": "claude-sonnet-4-flow.spec.js",
+              "line": 6,
+              "column": 3
+            },
+            {
+              "title": "complete user journey: register → login → generate game with Claude Sonnet 4",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Chrome",
+                  "projectName": "Desktop Chrome",
+                  "results": [
+                    {
+                      "workerIndex": 3,
+                      "parallelIndex": 3,
+                      "status": "failed",
+                      "duration": 27506,
+                      "error": {
+                        "message": "Error: Could not find chat input interface",
+                        "stack": "Error: Could not find chat input interface\n    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13",
+                        "location": {
+                          "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                          "column": 13,
+                          "line": 277
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                            "column": 13,
+                            "line": 277
+                          },
+                          "message": "Error: Could not find chat input interface\n\n\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m\n\u001b[2m    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test\n"
+                        },
+                        {
+                          "text": "📱 Step 1: Navigating to SurrealPilot homepage...\n"
+                        },
+                        {
+                          "text": "✅ Homepage loaded and screenshot saved\n"
+                        },
+                        {
+                          "text": "📄 Page title: \"SurrealPilot Desktop\"\n"
+                        },
+                        {
+                          "text": "🏢 Step 2: Accessing Filament company panel...\n"
+                        },
+                        {
+                          "text": "📍 Current URL: http://surreal-pilot.local/company/login\n"
+                        },
+                        {
+                          "text": "🔓 Authentication required - attempting registration...\n"
+                        },
+                        {
+                          "text": "📝 Found register link - clicking...\n"
+                        },
+                        {
+                          "text": "📋 Filling registration form...\n"
+                        },
+                        {
+                          "text": "🤖 Step 4: Looking for AI chat interface...\n"
+                        },
+                        {
+                          "text": "🔍 No chat input visible - looking for navigation...\n"
+                        },
+                        {
+                          "text": "📍 Found navigation: text=AI\n"
+                        },
+                        {
+                          "text": "❌ No chat input found on any page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-16T16:50:52.851Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Chrome\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Chrome\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Chrome\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                        "column": 13,
+                        "line": 277
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6e549f4dacf0efde8249-4b6e7c9c223843ff7ce3",
+              "file": "claude-sonnet-4-flow.spec.js",
+              "line": 6,
+              "column": 3
+            },
+            {
+              "title": "complete user journey: register → login → generate game with Claude Sonnet 4",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Desktop Safari",
+                  "projectName": "Desktop Safari",
+                  "results": [
+                    {
+                      "workerIndex": 4,
+                      "parallelIndex": 4,
+                      "status": "failed",
+                      "duration": 27819,
+                      "error": {
+                        "message": "Error: Could not find chat input interface",
+                        "stack": "Error: Could not find chat input interface\n    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13",
+                        "location": {
+                          "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                          "column": 13,
+                          "line": 277
+                        },
+                        "snippet": "\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                            "column": 13,
+                            "line": 277
+                          },
+                          "message": "Error: Could not find chat input interface\n\n\u001b[0m \u001b[90m 275 |\u001b[39m       console\u001b[33m.\u001b[39mlog(\u001b[32m'❌ No chat input found on any page'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 276 |\u001b[39m       \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mscreenshot({ path\u001b[33m:\u001b[39m \u001b[32m'test-results/claude-error-no-chat.png'\u001b[39m\u001b[33m,\u001b[39m fullPage\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 277 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m'Could not find chat input interface'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 278 |\u001b[39m     }\n \u001b[90m 279 |\u001b[39m\n \u001b[90m 280 |\u001b[39m     \u001b[90m// Step 7: Check storage for generated files\u001b[39m\u001b[0m\n\u001b[2m    at C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js:277:13\u001b[22m"
+                        }
+                      ],
+                      "stdout": [
+                        {
+                          "text": "🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test\n"
+                        },
+                        {
+                          "text": "📱 Step 1: Navigating to SurrealPilot homepage...\n"
+                        },
+                        {
+                          "text": "✅ Homepage loaded and screenshot saved\n"
+                        },
+                        {
+                          "text": "📄 Page title: \"SurrealPilot Desktop\"\n"
+                        },
+                        {
+                          "text": "🏢 Step 2: Accessing Filament company panel...\n"
+                        },
+                        {
+                          "text": "📍 Current URL: http://surreal-pilot.local/company/login\n"
+                        },
+                        {
+                          "text": "🔓 Authentication required - attempting registration...\n"
+                        },
+                        {
+                          "text": "📝 Found register link - clicking...\n"
+                        },
+                        {
+                          "text": "📋 Filling registration form...\n"
+                        },
+                        {
+                          "text": "🤖 Step 4: Looking for AI chat interface...\n"
+                        },
+                        {
+                          "text": "🔍 No chat input visible - looking for navigation...\n"
+                        },
+                        {
+                          "text": "📍 Found navigation: text=AI\n"
+                        },
+                        {
+                          "text": "❌ No chat input found on any page\n"
+                        }
+                      ],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2025-08-16T16:50:53.066Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Safari\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Safari\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\laragon\\www\\surreal-pilot\\test-results\\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Safari\\error-context.md"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\laragon\\www\\surreal-pilot\\tests\\Playwright\\claude-sonnet-4-flow.spec.js",
+                        "column": 13,
+                        "line": 277
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6e549f4dacf0efde8249-028c588a309655b9bf8f",
+              "file": "claude-sonnet-4-flow.spec.js",
+              "line": 6,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2025-08-16T16:50:47.445Z",
+    "duration": 35362.902,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 5,
+    "flaky": 0
+  }
+}

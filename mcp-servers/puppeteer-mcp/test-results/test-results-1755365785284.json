@@ -1,0 +1,86 @@
+{
+  "startTime": "2025-08-16T17:34:47.876Z",
+  "tests": [
+    {
+      "testNumber": 1,
+      "name": "Web Interface Login",
+      "success": false,
+      "details": {
+        "success": false,
+        "error": "Waiting for selector `input[name=\"email\"], input[id=\"email\"]` failed: Waiting failed: 10000ms exceeded"
+      }
+    },
+    {
+      "testNumber": 2,
+      "name": "Direct API Testing",
+      "success": true
+    },
+    {
+      "testNumber": 3,
+      "name": "Registration Flow",
+      "success": false,
+      "details": {
+        "success": false,
+        "error": "page.waitForTimeout is not a function"
+      }
+    },
+    {
+      "testNumber": 4,
+      "name": "Storage Verification",
+      "success": true,
+      "details": {
+        "success": true,
+        "summary": {
+          "storageLocations": [
+            {
+              "path": "storage/workspaces",
+              "exists": false
+            },
+            {
+              "path": "storage/app/public/templates",
+              "exists": false
+            },
+            {
+              "path": "storage/generated_games",
+              "exists": false
+            },
+            {
+              "path": "storage/app/public/games",
+              "exists": false
+            },
+            {
+              "path": "storage/builds",
+              "exists": false
+            },
+            {
+              "path": "public/downloads",
+              "exists": false
+            },
+            {
+              "path": "storage",
+              "exists": false
+            }
+          ],
+          "recentFiles": [],
+          "workspaces": [],
+          "builds": [],
+          "totalFiles": 0
+        },
+        "gameFiles": [],
+        "recommendations": [
+          "Check storage/workspaces for active PlayCanvas projects",
+          "Look for test_build_* directories for generated builds",
+          "Monitor storage/app/public for downloadable games",
+          "Recent files indicate active game generation"
+        ]
+      }
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "passed": 2,
+    "failed": 2
+  },
+  "endTime": "2025-08-16T17:36:25.279Z",
+  "duration": 97403
+}

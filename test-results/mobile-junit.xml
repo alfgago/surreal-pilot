@@ -1,0 +1,257 @@
+<testsuites id="" name="" tests="5" failures="5" skipped="0" errors="0" time="35.362902000000005">
+<testsuite name="claude-sonnet-4-flow.spec.js" timestamp="2025-08-16T16:50:50.368Z" hostname="Mobile Safari" tests="1" failures="1" skipped="0" time="29.124" errors="0">
+<testcase name="SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4" classname="claude-sonnet-4-flow.spec.js" time="29.124">
+<failure message="claude-sonnet-4-flow.spec.js:6:3 complete user journey: register → login → generate game with Claude Sonnet 4" type="FAILURE">
+<![CDATA[  [Mobile Safari] › claude-sonnet-4-flow.spec.js:6:3 › SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4 
+
+    Error: Could not find chat input interface
+
+      275 |       console.log('❌ No chat input found on any page');
+      276 |       await page.screenshot({ path: 'test-results/claude-error-no-chat.png', fullPage: true });
+    > 277 |       throw new Error('Could not find chat input interface');
+          |             ^
+      278 |     }
+      279 |
+      280 |     // Step 7: Check storage for generated files
+        at C:\laragon\www\surreal-pilot\tests\Playwright\claude-sonnet-4-flow.spec.js:277:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Safari\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test
+📱 Step 1: Navigating to SurrealPilot homepage...
+✅ Homepage loaded and screenshot saved
+📄 Page title: "SurrealPilot Desktop"
+🏢 Step 2: Accessing Filament company panel...
+📍 Current URL: http://surreal-pilot.local/company/login
+🔓 Authentication required - attempting registration...
+📝 Found register link - clicking...
+📋 Filling registration form...
+🤖 Step 4: Looking for AI chat interface...
+🔍 No chat input visible - looking for navigation...
+📍 Found navigation: text=AI
+❌ No chat input found on any page
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Safari\error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="claude-sonnet-4-flow.spec.js" timestamp="2025-08-16T16:50:50.368Z" hostname="Mobile Chrome" tests="1" failures="1" skipped="0" time="25.419" errors="0">
+<testcase name="SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4" classname="claude-sonnet-4-flow.spec.js" time="25.419">
+<failure message="claude-sonnet-4-flow.spec.js:6:3 complete user journey: register → login → generate game with Claude Sonnet 4" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › claude-sonnet-4-flow.spec.js:6:3 › SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4 
+
+    Error: Could not find chat input interface
+
+      275 |       console.log('❌ No chat input found on any page');
+      276 |       await page.screenshot({ path: 'test-results/claude-error-no-chat.png', fullPage: true });
+    > 277 |       throw new Error('Could not find chat input interface');
+          |             ^
+      278 |     }
+      279 |
+      280 |     // Step 7: Check storage for generated files
+        at C:\laragon\www\surreal-pilot\tests\Playwright\claude-sonnet-4-flow.spec.js:277:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test
+📱 Step 1: Navigating to SurrealPilot homepage...
+✅ Homepage loaded and screenshot saved
+📄 Page title: "SurrealPilot Desktop"
+🏢 Step 2: Accessing Filament company panel...
+📍 Current URL: http://surreal-pilot.local/company/login
+🔓 Authentication required - attempting registration...
+📝 Found register link - clicking...
+📋 Filling registration form...
+🤖 Step 4: Looking for AI chat interface...
+🔍 No chat input visible - looking for navigation...
+📍 Found navigation: text=AI
+❌ No chat input found on any page
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="claude-sonnet-4-flow.spec.js" timestamp="2025-08-16T16:50:50.368Z" hostname="iPad" tests="1" failures="1" skipped="0" time="25.004" errors="0">
+<testcase name="SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4" classname="claude-sonnet-4-flow.spec.js" time="25.004">
+<failure message="claude-sonnet-4-flow.spec.js:6:3 complete user journey: register → login → generate game with Claude Sonnet 4" type="FAILURE">
+<![CDATA[  [iPad] › claude-sonnet-4-flow.spec.js:6:3 › SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4 
+
+    Error: Could not find chat input interface
+
+      275 |       console.log('❌ No chat input found on any page');
+      276 |       await page.screenshot({ path: 'test-results/claude-error-no-chat.png', fullPage: true });
+    > 277 |       throw new Error('Could not find chat input interface');
+          |             ^
+      278 |     }
+      279 |
+      280 |     // Step 7: Check storage for generated files
+        at C:\laragon\www\surreal-pilot\tests\Playwright\claude-sonnet-4-flow.spec.js:277:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-iPad\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-iPad\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-iPad\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test
+📱 Step 1: Navigating to SurrealPilot homepage...
+✅ Homepage loaded and screenshot saved
+📄 Page title: "SurrealPilot Desktop"
+🏢 Step 2: Accessing Filament company panel...
+📍 Current URL: http://surreal-pilot.local/company/login
+🔓 Authentication required - attempting registration...
+📝 Found register link - clicking...
+📋 Filling registration form...
+🤖 Step 4: Looking for AI chat interface...
+🔍 No chat input visible - looking for navigation...
+📍 Found navigation: text=AI
+❌ No chat input found on any page
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-iPad\test-failed-1.png]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-iPad\video.webm]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-iPad\error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="claude-sonnet-4-flow.spec.js" timestamp="2025-08-16T16:50:50.368Z" hostname="Desktop Chrome" tests="1" failures="1" skipped="0" time="27.506" errors="0">
+<testcase name="SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4" classname="claude-sonnet-4-flow.spec.js" time="27.506">
+<failure message="claude-sonnet-4-flow.spec.js:6:3 complete user journey: register → login → generate game with Claude Sonnet 4" type="FAILURE">
+<![CDATA[  [Desktop Chrome] › claude-sonnet-4-flow.spec.js:6:3 › SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4 
+
+    Error: Could not find chat input interface
+
+      275 |       console.log('❌ No chat input found on any page');
+      276 |       await page.screenshot({ path: 'test-results/claude-error-no-chat.png', fullPage: true });
+    > 277 |       throw new Error('Could not find chat input interface');
+          |             ^
+      278 |     }
+      279 |
+      280 |     // Step 7: Check storage for generated files
+        at C:\laragon\www\surreal-pilot\tests\Playwright\claude-sonnet-4-flow.spec.js:277:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test
+📱 Step 1: Navigating to SurrealPilot homepage...
+✅ Homepage loaded and screenshot saved
+📄 Page title: "SurrealPilot Desktop"
+🏢 Step 2: Accessing Filament company panel...
+📍 Current URL: http://surreal-pilot.local/company/login
+🔓 Authentication required - attempting registration...
+📝 Found register link - clicking...
+📋 Filling registration form...
+🤖 Step 4: Looking for AI chat interface...
+🔍 No chat input visible - looking for navigation...
+📍 Found navigation: text=AI
+❌ No chat input found on any page
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Chrome\video.webm]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="claude-sonnet-4-flow.spec.js" timestamp="2025-08-16T16:50:50.368Z" hostname="Desktop Safari" tests="1" failures="1" skipped="0" time="27.819" errors="0">
+<testcase name="SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4" classname="claude-sonnet-4-flow.spec.js" time="27.819">
+<failure message="claude-sonnet-4-flow.spec.js:6:3 complete user journey: register → login → generate game with Claude Sonnet 4" type="FAILURE">
+<![CDATA[  [Desktop Safari] › claude-sonnet-4-flow.spec.js:6:3 › SurrealPilot Claude Sonnet 4 Flow Test › complete user journey: register → login → generate game with Claude Sonnet 4 
+
+    Error: Could not find chat input interface
+
+      275 |       console.log('❌ No chat input found on any page');
+      276 |       await page.screenshot({ path: 'test-results/claude-error-no-chat.png', fullPage: true });
+    > 277 |       throw new Error('Could not find chat input interface');
+          |             ^
+      278 |     }
+      279 |
+      280 |     // Step 7: Check storage for generated files
+        at C:\laragon\www\surreal-pilot\tests\Playwright\claude-sonnet-4-flow.spec.js:277:13
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Safari\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[🎮 Starting SurrealPilot Claude Sonnet 4 Flow Test
+📱 Step 1: Navigating to SurrealPilot homepage...
+✅ Homepage loaded and screenshot saved
+📄 Page title: "SurrealPilot Desktop"
+🏢 Step 2: Accessing Filament company panel...
+📍 Current URL: http://surreal-pilot.local/company/login
+🔓 Authentication required - attempting registration...
+📝 Found register link - clicking...
+📋 Filling registration form...
+🤖 Step 4: Looking for AI chat interface...
+🔍 No chat input visible - looking for navigation...
+📍 Found navigation: text=AI
+❌ No chat input found on any page
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Safari\video.webm]]
+
+[[ATTACHMENT|claude-sonnet-4-flow-Surre-c44a7-e-game-with-Claude-Sonnet-4-Desktop-Safari\error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

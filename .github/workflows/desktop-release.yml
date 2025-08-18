@@ -1,0 +1,112 @@
+name: Desktop Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        default: '1.0.0'
+
+jobs:
+  build-desktop:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win32
+            arch: x64
+            ext: .exe
+          - os: macos-latest
+            platform: darwin
+            arch: x64
+            ext: .dmg
+          - os: ubuntu-latest
+            platform: linux
+            arch: x64
+            ext: .AppImage
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, dom, fileinfo, sqlite3, gd, imagick
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install Composer dependencies
+      run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
+
+    - name: Install NPM dependencies
+      run: npm ci
+
+    - name: Build assets
+      run: npm run build
+
+    - name: Configure application for desktop
+      run: |
+        cp .env.example .env
+        php artisan key:generate
+        php artisan config:cache
+
+    - name: Build NativePHP application
+      run: php artisan native:build
+
+    - name: Sign application (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        # Add code signing for macOS
+        echo "Code signing for macOS would go here"
+
+    - name: Sign application (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        # Add code signing for Windows
+        echo "Code signing for Windows would go here"
+
+    - name: Create installer
+      run: |
+        # Create platform-specific installer
+        echo "Creating installer for ${{ matrix.platform }}"
+
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./dist/SurrealPilot-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.ext }}
+        asset_name: SurrealPilot-${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.ext }}
+        asset_content_type: application/octet-stream
+
+  update-release-notes:
+    needs: build-desktop
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Generate release notes
+      run: |
+        echo "Generating release notes..."
+        # Add logic to generate release notes from commits/PRs
+
+    - name: Update release
+      uses: actions/github-script@v6
+      with:
+        script: |
+          github.rest.repos.updateRelease({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            release_id: context.payload.release.id,
+            body: "Updated release notes with desktop builds"
+          });

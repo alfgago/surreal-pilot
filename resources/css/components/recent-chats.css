@@ -1,0 +1,239 @@
+/* Recent Chats Component Styles */
+
+.recent-chats-component {
+    @apply bg-gray-800 rounded-lg border border-gray-700;
+}
+
+.recent-chats-header {
+    @apply p-4 border-b border-gray-700 bg-gray-800 rounded-t-lg;
+}
+
+.recent-chats-list {
+    @apply p-4 space-y-2 max-h-96 overflow-y-auto;
+}
+
+.conversation-item {
+    @apply p-3 bg-gray-700 hover:bg-gray-600 rounded-lg cursor-pointer transition-all duration-200 group;
+    @apply focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-800;
+}
+
+.conversation-item:hover {
+    @apply shadow-md;
+}
+
+.conversation-item.selected {
+    @apply ring-2 ring-indigo-500 bg-gray-600;
+}
+
+.conversation-item .delete-conversation-btn {
+    @apply opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200;
+    @apply text-gray-500 hover:text-red-400 focus:text-red-400;
+    @apply focus:outline-none focus:ring-1 focus:ring-red-400 rounded;
+}
+
+.conversation-title {
+    @apply text-sm font-medium text-white truncate;
+}
+
+.conversation-preview {
+    @apply text-xs text-gray-400 line-clamp-2 mb-2;
+}
+
+.conversation-meta {
+    @apply flex items-center justify-between text-xs text-gray-500;
+}
+
+.conversation-workspace-info {
+    @apply text-xs text-indigo-400 mb-1 flex items-center;
+}
+
+.recent-chats-loading {
+    @apply p-8 text-center;
+}
+
+.recent-chats-empty {
+    @apply text-center py-8 px-4;
+}
+
+.recent-chats-error {
+    @apply p-8 text-center;
+}
+
+.delete-modal {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4;
+}
+
+.delete-modal-content {
+    @apply bg-gray-800 rounded-lg max-w-md w-full p-6 shadow-xl;
+}
+
+.delete-modal-header {
+    @apply flex items-center justify-between mb-4;
+}
+
+.delete-modal-body {
+    @apply mb-6;
+}
+
+.delete-modal-footer {
+    @apply flex justify-end space-x-3;
+}
+
+.delete-conversation-info {
+    @apply mt-3 p-3 bg-gray-700 rounded-lg border border-gray-600;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Line clamp utility for text truncation */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Scrollbar styling for the conversations list */
+.recent-chats-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.recent-chats-list::-webkit-scrollbar-track {
+    @apply bg-gray-800 rounded;
+}
+
+.recent-chats-list::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 rounded hover:bg-gray-500;
+}
+
+/* Focus states for accessibility */
+.conversation-item:focus-visible {
+    @apply ring-2 ring-indigo-500 ring-offset-2 ring-offset-gray-800;
+}
+
+.delete-conversation-btn:focus-visible {
+    @apply ring-1 ring-red-400 ring-offset-1 ring-offset-gray-700;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .recent-chats-component {
+        @apply rounded-none border-x-0;
+    }
+    
+    .recent-chats-header {
+        @apply rounded-none;
+    }
+    
+    .recent-chats-list {
+        @apply max-h-80;
+    }
+    
+    .conversation-item {
+        @apply p-2;
+    }
+    
+    .delete-modal {
+        @apply p-2;
+    }
+    
+    .delete-modal-content {
+        @apply p-4;
+    }
+}
+
+/* Dark mode specific adjustments */
+@media (prefers-color-scheme: dark) {
+    .recent-chats-component {
+        @apply bg-gray-900 border-gray-600;
+    }
+    
+    .recent-chats-header {
+        @apply bg-gray-900 border-gray-600;
+    }
+    
+    .conversation-item {
+        @apply bg-gray-800 hover:bg-gray-700;
+    }
+    
+    .conversation-item.selected {
+        @apply bg-gray-700;
+    }
+    
+    .delete-modal-content {
+        @apply bg-gray-900;
+    }
+    
+    .delete-conversation-info {
+        @apply bg-gray-800 border-gray-600;
+    }
+}
+
+/* Animation for conversation items */
+.conversation-item {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hover effects for better UX */
+.conversation-item:hover .conversation-title {
+    @apply text-indigo-200;
+}
+
+.conversation-item:hover .conversation-preview {
+    @apply text-gray-300;
+}
+
+/* Loading state styles */
+.recent-chats-loading .loading-spinner {
+    @apply inline-flex items-center text-indigo-400;
+}
+
+.recent-chats-loading .loading-text {
+    @apply text-gray-400 ml-3;
+}
+
+/* Error state styles */
+.recent-chats-error .error-icon {
+    @apply h-12 w-12 text-red-500 mx-auto mb-3;
+}
+
+.recent-chats-error .error-message {
+    @apply text-red-400 text-sm mb-2;
+}
+
+.recent-chats-error .retry-button {
+    @apply text-indigo-400 hover:text-indigo-300 text-sm underline;
+}
+
+/* Empty state styles */
+.recent-chats-empty .empty-icon {
+    @apply h-12 w-12 text-gray-500 mx-auto mb-3;
+}
+
+.recent-chats-empty .empty-message {
+    @apply text-gray-500 text-sm;
+}
+
+.recent-chats-empty .empty-submessage {
+    @apply text-gray-600 text-xs mt-1;
+}

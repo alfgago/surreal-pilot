@@ -1,0 +1,12 @@
+{
+    "preferred_provider": "openai",
+    "api_keys": {
+        "openai": null,
+        "anthropic": null,
+        "gemini": null
+    },
+    "saas_token": null,
+    "saas_url": "https://api.surrealpilot.com",
+    "server_port": 8000,
+    "created_at": "2025-08-08T22:53:34.235172Z"
+}

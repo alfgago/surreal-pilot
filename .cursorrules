@@ -1,0 +1,92 @@
+# Cursor AI Assistant Rules for SurrealPilot Project
+
+## 🎭 Playwright Testing Rules
+
+-   **ALWAYS run Playwright tests in headless mode** - Never use `--headed` flag unless explicitly requested by user
+-   **Default Playwright command format**: `npx playwright test [test-file] --project="Desktop Chrome"`
+-   **For debugging only**: Use `--headed` when user specifically asks to "see the browser" or "debug visually"
+-   **Screenshots**: Always capture screenshots in tests for visual verification since headless mode doesn't show UI
+-   **Timeouts**: Use appropriate timeouts for AI responses (30-60 seconds for complex prompts)
+-   **Test structure**: Create comprehensive flow tests that don't require manual interaction
+
+## 🤖 AI Agent Testing
+
+-   **Claude Sonnet 4**: Current model is `claude-sonnet-4-20250514` (updated from `claude-3-5-sonnet-20241022`)
+-   **Agent configuration**: Both PlayCanvas and Unreal agents use Claude Sonnet 4
+-   **Testing approach**: Always verify API key availability before running full flow tests
+-   **Expected behavior**: Agents are configured via Vizra ADK, not Prism directly
+
+## 🧪 Testing Best Practices
+
+-   **Headless automation**: All automated tests should run without requiring user interaction
+-   **API verification first**: Check `/api/providers` endpoint before running complex UI tests
+-   **Environment checks**: Verify API keys are configured before testing AI features
+-   **Screenshot strategy**: Take screenshots at each major step for debugging and verification
+-   **Error handling**: Always include proper error handling and informative console output
+
+## 📁 File Structure Awareness
+
+-   **Agents location**: `app/Agents/` (PlayCanvasAgent.php, UnrealAgent.php)
+-   **Enhanced agents**: `app/Agents/Enhanced/` (expert versions with more knowledge)
+-   **Knowledge base**: `storage/knowledge-base/` (training data for agents)
+-   **Test results**: `test-results/` (screenshots and reports)
+-   **Playwright tests**: `tests/Playwright/` (UI automation tests)
+
+## 🔧 Environment Configuration
+
+-   **Laragon URL**: `http://surreal-pilot.local/` (not localhost)
+-   **Filament panel**: `/company` route for admin access
+-   **API endpoints**: `/api/providers`, `/api/assist`, `/api/chat`
+-   **Storage check**: `storage/` directory for generated games
+-   **Package management**: Playwright in main project, Puppeteer in `mcp-servers/puppeteer-mcp/`
+
+## 🎮 Game Generation Testing
+
+-   **Test prompts**: Use detailed game specifications with technical requirements
+-   **Expected output**: HTML5 games with Canvas, JavaScript, physics, controls
+-   **Storage verification**: Check `storage/test_build_*/` for generated files
+-   **Screenshots**: Capture AI responses and any generated game previews
+
+## 💻 PowerShell Compatibility
+
+-   **Command chaining**: Use `;` instead of `&&` for PowerShell
+-   **Directory changes**: Use separate commands: `cd directory` then `command`
+-   **Error handling**: Be aware of PowerShell-specific error messages and syntax
+
+## 🚨 Automation Reminders
+
+-   **NEVER use `--headed` by default** - only when user explicitly requests visual debugging
+-   **ALWAYS run tests that complete automatically** without waiting for manual input
+-   **USE screenshots extensively** since headless mode doesn't show visual feedback
+-   **VERIFY API availability** before running complex AI interaction tests
+-   **HANDLE authentication flows** programmatically in tests
+
+## 📊 Testing Output
+
+-   **Console logging**: Provide detailed step-by-step progress updates
+-   **Screenshot naming**: Use descriptive names like `claude-01-homepage.png`
+-   **Test reports**: Generate JSON reports with detailed results
+-   **Success metrics**: Track completion rates, API responses, generated content
+
+## 🔄 Common Test Patterns
+
+```javascript
+// Correct headless test pattern
+test("should test feature automatically", async ({ page }) => {
+    await page.goto("http://surreal-pilot.local/");
+    await page.screenshot({ path: "test-results/step.png" });
+    // ... automated assertions
+});
+
+// Avoid: Manual interaction tests that require user input
+// Avoid: --headed flag unless debugging
+// Avoid: Timeouts without proper error handling
+```
+
+## 🎯 Success Criteria
+
+-   Tests run completely automatically
+-   No manual intervention required
+-   Clear visual documentation via screenshots
+-   Comprehensive error reporting
+-   Proper headless operation by default
