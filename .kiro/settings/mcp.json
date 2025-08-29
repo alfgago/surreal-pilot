@@ -1,30 +1,30 @@
 {
   "mcpServers": {
-    "puppeteer": {
-      "command": "node",
+    "ref-tools": {
+      "command": "npx",
       "args": [
-        "mcp-servers/puppeteer-mcp/server.js"
+        "ref-tools-mcp@latest"
       ],
       "env": {
+        "REF_API_KEY": "ref-a0efadf19ae43c51c776",
         "FASTMCP_LOG_LEVEL": "ERROR"
       },
       "disabled": false,
       "autoApprove": [
-        "*",
-        "launch_browser",
-        "navigate_to_url",
-        "take_screenshot",
-        "get_page_content",
-        "click_element",
-        "type_text",
-        "type_text",
-        "close_browser"
+        "search",
+        "get",
+        "list",
+        "search_docs",
+        "get_doc",
+        "list_libraries",
+        "ref_search_documentation",
+        "ref_read_url"
       ]
     },
     "laravel-boost": {
       "command": "php",
       "args": [
-        "./artisan",
+        "artisan",
         "boost:mcp"
       ],
       "env": {
@@ -55,7 +55,13 @@
         "get-config",
         "database-schema",
         "database-query",
-        "database-query"
+        "database-query",
+        "list-available-env-vars",
+        "read-log-entries",
+        "list-available-config-keys",
+        "get-absolute-url",
+        "last-error",
+        "browser-logs"
       ]
     }
   }

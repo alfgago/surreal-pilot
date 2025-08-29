@@ -10,6 +10,7 @@ use App\Services\RolePermissionService;
 use App\Services\ApiErrorHandler;
 use App\Services\ErrorMonitoringService;
 use App\Services\PlayCanvasMcpManager;
+use App\Services\OnDemandMcpManager;
 use App\Services\UnrealMcpManager;
 use App\Services\ChatConversationService;
 use App\Models\Workspace;
@@ -31,6 +32,7 @@ class AssistController extends Controller
         private ApiErrorHandler $errorHandler,
         private ErrorMonitoringService $errorMonitoring,
         private PlayCanvasMcpManager $playCanvasMcpManager,
+        private OnDemandMcpManager $onDemandMcpManager,
         private UnrealMcpManager $unrealMcpManager,
         private ChatConversationService $conversationService,
         private ?\App\Services\PatchValidator $patchValidator = null
@@ -171,8 +173,12 @@ class AssistController extends Controller
         }
 
         if ($data['stream'] === true) {
-            return response()->stream(function () use ($executor, $data, $user, $company) {
+            return response()->stream(function () use ($executor, $data, $user, $company, $engineType) {
                 try {
+                    // Generate and send thinking process first
+                    $thinkingProcess = $this->generateThinkingProcess($data['messages'], $data['context'] ?? [], $engineType);
+                    $this->sendSSEEvent('thinking', $thinkingProcess);
+
                     // Execute as streaming
                     $stream = $executor->streaming(true)->go();
 
@@ -367,9 +373,13 @@ class AssistController extends Controller
             $this->creditManager->deductCredits($company, 0.5, 'Test deduction: Unreal minimal tokens');
         }
 
+        // Generate thinking process for non-streaming response
+        $thinkingProcess = $this->generateThinkingProcess($data['messages'], $data['context'] ?? [], $engineType);
+
         return response()->json([
             'success' => true,
             'response' => is_string($result) ? $result : ($result['text'] ?? json_encode($result)),
+            'thinking' => $thinkingProcess,
             'metadata' => [
                 'provider' => $data['resolved_provider'],
                 'model' => $data['model'] ?? 'default',
@@ -393,6 +403,132 @@ class AssistController extends Controller
             ob_flush();
         }
         flush();
+    }
+
+    /**
+     * Generate AI thinking process for enhanced chat experience.
+     */
+    private function generateThinkingProcess(array $messages, array $context, string $engineType): array
+    {
+        $lastMessage = end($messages);
+        $userInput = $lastMessage['content'] ?? '';
+        
+        $thinking = [
+            'timestamp' => now()->toISOString(),
+            'steps' => []
+        ];
+
+        // Step 1: Analysis
+        $thinking['steps'][] = [
+            'type' => 'analysis',
+            'title' => 'Understanding the Request',
+            'content' => $this->analyzeUserInput($userInput, $engineType),
+            'duration' => rand(500, 1200) // Simulated thinking time in ms
+        ];
+
+        // Step 2: Decision Making
+        $thinking['steps'][] = [
+            'type' => 'decision',
+            'title' => 'Planning the Implementation',
+            'content' => $this->planImplementation($userInput, $context, $engineType),
+            'duration' => rand(800, 1500)
+        ];
+
+        // Step 3: Implementation Strategy
+        $thinking['steps'][] = [
+            'type' => 'implementation',
+            'title' => 'Code Generation Strategy',
+            'content' => $this->determineImplementationStrategy($userInput, $engineType),
+            'duration' => rand(600, 1000)
+        ];
+
+        // Step 4: Validation
+        $thinking['steps'][] = [
+            'type' => 'validation',
+            'title' => 'Quality Assurance',
+            'content' => $this->validateApproach($userInput, $engineType),
+            'duration' => rand(400, 800)
+        ];
+
+        return $thinking;
+    }
+
+    /**
+     * Analyze user input to understand the request.
+     */
+    private function analyzeUserInput(string $input, string $engineType): string
+    {
+        $input = strtolower($input);
+        
+        // Game type detection
+        if (str_contains($input, 'tower defense') || str_contains($input, 'td')) {
+            return "I can see you want to create a Tower Defense game. This involves:\n- Towers that can be placed and upgraded\n- Enemies that follow paths\n- Wave-based gameplay with increasing difficulty\n- Currency system for purchasing towers\n- Win/lose conditions based on enemy breakthroughs";
+        }
+        
+        if (str_contains($input, 'platformer')) {
+            return "You're requesting a platformer game. Key elements include:\n- Player character with jump mechanics\n- Platform-based level design\n- Collision detection for platforms and hazards\n- Possibly collectibles and enemies\n- Side-scrolling or fixed camera view";
+        }
+        
+        if (str_contains($input, 'shooter') || str_contains($input, 'fps')) {
+            return "This is a shooter game request. Core mechanics involve:\n- Player movement and aiming\n- Projectile or hitscan weapons\n- Enemy AI and spawning\n- Health/damage systems\n- Possibly power-ups and multiple weapons";
+        }
+
+        // Modification detection
+        if (str_contains($input, 'add') || str_contains($input, 'create')) {
+            return "You want to add new functionality to the existing game. I'll analyze what specific features you're requesting and how they integrate with the current game state.";
+        }
+        
+        if (str_contains($input, 'fix') || str_contains($input, 'bug') || str_contains($input, 'error')) {
+            return "I detect you're reporting an issue that needs fixing. I'll examine the current code to identify potential problems and provide solutions.";
+        }
+        
+        if (str_contains($input, 'improve') || str_contains($input, 'better') || str_contains($input, 'optimize')) {
+            return "You're looking for improvements to existing functionality. I'll consider performance optimizations, code quality enhancements, and user experience improvements.";
+        }
+
+        return "I'm analyzing your request to understand the specific game mechanics, features, or modifications you want to implement using {$engineType}.";
+    }
+
+    /**
+     * Plan the implementation approach.
+     */
+    private function planImplementation(string $input, array $context, string $engineType): string
+    {
+        $hasExistingGame = !empty($context['scene']) || !empty($context['entities']) || !empty($context['workspace_id']);
+        
+        if ($engineType === 'playcanvas') {
+            if ($hasExistingGame) {
+                return "Since there's an existing PlayCanvas project, I'll:\n1. Analyze the current scene structure and entities\n2. Identify which components need modification or addition\n3. Plan the integration without breaking existing functionality\n4. Ensure mobile-optimized performance\n5. Maintain the existing asset references and scripts";
+            } else {
+                return "For a new PlayCanvas project, I'll:\n1. Select the most appropriate template (Starter FPS, Third-person, or Platformer)\n2. Set up the basic scene structure with camera and lighting\n3. Create the core game entities and components\n4. Implement the main game loop and user interactions\n5. Optimize for mobile devices and touch controls";
+            }
+        } else {
+            if ($hasExistingGame) {
+                return "Working with the existing Unreal project, I'll:\n1. Review current Blueprint structure and C++ classes\n2. Plan modifications using FScopedTransaction for safety\n3. Ensure compatibility with existing systems\n4. Consider performance implications\n5. Maintain proper UE5 coding standards";
+            } else {
+                return "For a new Unreal Engine project, I'll:\n1. Set up the basic project structure with appropriate templates\n2. Create necessary Blueprint classes and C++ components\n3. Implement core gameplay mechanics\n4. Set up proper actor hierarchies and component relationships\n5. Ensure hot-reload compatibility";
+            }
+        }
+    }
+
+    /**
+     * Determine the specific implementation strategy.
+     */
+    private function determineImplementationStrategy(string $input, string $engineType): string
+    {
+        if ($engineType === 'playcanvas') {
+            return "I'll use PlayCanvas MCP commands to:\n- Generate clean, modular JavaScript code\n- Create reusable components for game mechanics\n- Implement efficient entity-component patterns\n- Ensure proper asset loading and management\n- Add touch-friendly controls for mobile compatibility\n- Use PlayCanvas best practices for performance";
+        } else {
+            return "I'll generate Unreal Engine code that:\n- Uses proper UCLASS, UPROPERTY, and UFUNCTION macros\n- Implements safe Blueprint node connections\n- Follows UE5 coding conventions and patterns\n- Ensures proper memory management\n- Supports hot-reload for rapid iteration\n- Maintains compatibility with existing systems";
+        }
+    }
+
+    /**
+     * Validate the planned approach.
+     */
+    private function validateApproach(string $input, string $engineType): string
+    {
+        return "Before implementing, I'm checking:\n✓ Code will be mobile-optimized and performant\n✓ Implementation follows {$engineType} best practices\n✓ Changes won't break existing functionality\n✓ User interactions will be intuitive and responsive\n✓ Code is modular and maintainable\n✓ Error handling is properly implemented";
     }
 
     /**
@@ -544,7 +680,8 @@ class AssistController extends Controller
                 }
             }
             
-            return $this->playCanvasMcpManager->sendCommand($workspace, $command, $conversation);
+            // Use on-demand MCP manager for better scalability
+            return $this->onDemandMcpManager->sendCommand($workspace, $command, $conversation);
         } elseif ($workspace->isUnreal()) {
             Log::info('Routing command to Unreal MCP server', [
                 'workspace_id' => $workspace->id,

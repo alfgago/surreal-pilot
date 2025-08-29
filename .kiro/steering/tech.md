@@ -2,7 +2,7 @@
 
 ## Backend Framework
 - **Laravel 12** with PHP 8.3+
-- **Filament 4** for admin dashboard and company management
+- **Inertia.js with React** for modern SPA experience
 - **Laravel Sanctum** for API authentication
 - **Laravel Cashier** with Stripe integration for billing
 - **Spatie Laravel Permission** for role-based access control
@@ -32,9 +32,10 @@
 - **Redis** for caching and sessions
 
 ## Testing
-- **PHPUnit** for PHP unit and feature tests
-- **Puppeteer MCP** for end-to-end browser testing
+- **Pest 4** for PHP unit, feature, and browser tests (primary)
 - **Jest** for JavaScript unit tests
+- **Pest Browser Testing** for end-to-end scenarios
+- **Iterative Testing Workflow** for automated test execution and fixing
 - Comprehensive test coverage for API endpoints, services, and UI
 
 ## Game Engine Integration
@@ -48,9 +49,13 @@
 - **Laravel Pint** for code formatting
 - **Laravel Pail** for log monitoring
 
+## Local Development
+- **Local Domain**: surreal-pilot.local (application runs on this domain)
+- **No need to serve**: Application is already running and accessible
+
 ## Model Context Protocol (MCP)
+- **Ref Tools MCP** for comprehensive documentation access (Laravel, Inertia, PlayCanvas)
 - **Laravel Boost MCP** for rapid Laravel scaffolding and code generation
-- **Puppeteer MCP** for browser automation and end-to-end testing
 - **PlayCanvas MCP** for game engine integration and context management
 - Auto-approved tools for seamless development workflow
 
@@ -67,7 +72,7 @@ composer run native:dev
 # Run tests
 php artisan test
 npm run test:jest
-npm run test:mobile
+npm run test:mcp:all
 
 # Code formatting
 ./vendor/bin/pint

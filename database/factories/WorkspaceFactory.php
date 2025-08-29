@@ -33,6 +33,7 @@ class WorkspaceFactory extends Factory
         
         return [
             'company_id' => Company::factory(),
+            'created_by' => \App\Models\User::factory(),
             'name' => $this->faker->words(2, true) . ' Workspace',
             'engine_type' => $engineType,
             'template_id' => $this->faker->slug(2),

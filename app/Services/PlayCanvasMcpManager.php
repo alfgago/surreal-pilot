@@ -6,6 +6,7 @@ use App\Models\Workspace;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 use Exception;
 
 class PlayCanvasMcpManager
@@ -18,6 +19,13 @@ class PlayCanvasMcpManager
 
     private static array $runningServers = [];
     private static array $portRegistry = [];
+    
+    private string $gameStorageDisk;
+
+    public function __construct()
+    {
+        $this->gameStorageDisk = config('filesystems.default');
+    }
 
     /**
      * Start a PlayCanvas MCP server for the given workspace.
@@ -356,7 +364,7 @@ class PlayCanvasMcpManager
     private function startMcpProcess(Workspace $workspace, int $port): int
     {
         $mcpPath = base_path(self::MCP_SERVER_PATH);
-        $workspacePath = storage_path("workspaces/{$workspace->id}");
+        $workspacePath = $this->getWorkspaceStoragePath($workspace);
 
         if (!is_dir($mcpPath)) {
             throw new Exception('PlayCanvas MCP server not found. Please run git submodule update --init');
@@ -608,7 +616,7 @@ class PlayCanvasMcpManager
      */
     private function checkWorkspaceFiles(Workspace $workspace): array
     {
-        $workspacePath = storage_path("workspaces/{$workspace->id}");
+        $workspacePath = $this->getWorkspaceStoragePath($workspace);
 
         if (!is_dir($workspacePath)) {
             return [
@@ -1035,5 +1043,126 @@ class PlayCanvasMcpManager
         }
 
         return false;
+    }
+
+    /**
+     * Get the storage path for a workspace using the configured filesystem disk.
+     *
+     * @param Workspace $workspace
+     * @return string
+     */
+    public function getWorkspaceStoragePath(Workspace $workspace): string
+    {
+        $disk = Storage::disk($this->gameStorageDisk);
+        $workspaceDir = "workspaces/{$workspace->id}";
+        
+        // Get the full path from the disk
+        $fullPath = $disk->path($workspaceDir);
+        
+        // Ensure the directory exists
+        if (!$disk->exists($workspaceDir)) {
+            $disk->makeDirectory($workspaceDir, 0755, true);
+        }
+        
+        return $fullPath;
+    }
+
+    /**
+     * Get the storage disk instance for games.
+     *
+     * @return \Illuminate\Contracts\Filesystem\Filesystem
+     */
+    public function getGameStorageDisk()
+    {
+        return Storage::disk($this->gameStorageDisk);
+    }
+
+    /**
+     * Store game files in the configured storage disk.
+     *
+     * @param Workspace $workspace
+     * @param string $gameId
+     * @param array $files
+     * @return array
+     */
+    public function storeGameFiles(Workspace $workspace, string $gameId, array $files): array
+    {
+        $disk = $this->getGameStorageDisk();
+        $gameDir = "workspaces/{$workspace->id}/games/{$gameId}";
+        
+        $storedFiles = [];
+        
+        foreach ($files as $filename => $content) {
+            $filePath = "{$gameDir}/{$filename}";
+            
+            // Store the file
+            $disk->put($filePath, $content);
+            
+            $storedFiles[$filename] = [
+                'path' => $filePath,
+                'url' => $disk->url($filePath),
+                'size' => strlen($content),
+            ];
+        }
+        
+        Log::info('Game files stored', [
+            'workspace_id' => $workspace->id,
+            'game_id' => $gameId,
+            'files_count' => count($storedFiles),
+            'disk' => $this->gameStorageDisk,
+        ]);
+        
+        return $storedFiles;
+    }
+
+    /**
+     * Get game files from storage.
+     *
+     * @param Workspace $workspace
+     * @param string $gameId
+     * @return array
+     */
+    public function getGameFiles(Workspace $workspace, string $gameId): array
+    {
+        $disk = $this->getGameStorageDisk();
+        $gameDir = "workspaces/{$workspace->id}/games/{$gameId}";
+        
+        if (!$disk->exists($gameDir)) {
+            return [];
+        }
+        
+        $files = [];
+        $allFiles = $disk->allFiles($gameDir);
+        
+        foreach ($allFiles as $filePath) {
+            $filename = basename($filePath);
+            $files[$filename] = [
+                'path' => $filePath,
+                'url' => $disk->url($filePath),
+                'size' => $disk->size($filePath),
+                'modified' => $disk->lastModified($filePath),
+            ];
+        }
+        
+        return $files;
+    }
+
+    /**
+     * Delete game files from storage.
+     *
+     * @param Workspace $workspace
+     * @param string $gameId
+     * @return bool
+     */
+    public function deleteGameFiles(Workspace $workspace, string $gameId): bool
+    {
+        $disk = $this->getGameStorageDisk();
+        $gameDir = "workspaces/{$workspace->id}/games/{$gameId}";
+        
+        if ($disk->exists($gameDir)) {
+            return $disk->deleteDirectory($gameDir);
+        }
+        
+        return true;
     }
 }

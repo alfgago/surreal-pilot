@@ -1,9 +1,8 @@
 # Cursor AI Assistant Rules for SurrealPilot Project
 
-## 🎭 Playwright Testing Rules
+## 🎭 Puppeteer Testing Rules
 
--   **ALWAYS run Playwright tests in headless mode** - Never use `--headed` flag unless explicitly requested by user
--   **Default Playwright command format**: `npx playwright test [test-file] --project="Desktop Chrome"`
+-   **ALWAYS run Puppeteer MCP tests in headless mode** - Never use `--headed` flag unless explicitly requested by user
 -   **For debugging only**: Use `--headed` when user specifically asks to "see the browser" or "debug visually"
 -   **Screenshots**: Always capture screenshots in tests for visual verification since headless mode doesn't show UI
 -   **Timeouts**: Use appropriate timeouts for AI responses (30-60 seconds for complex prompts)
@@ -30,7 +29,7 @@
 -   **Enhanced agents**: `app/Agents/Enhanced/` (expert versions with more knowledge)
 -   **Knowledge base**: `storage/knowledge-base/` (training data for agents)
 -   **Test results**: `test-results/` (screenshots and reports)
--   **Playwright tests**: `tests/Playwright/` (UI automation tests)
+-   **Puppeteer tests**: `tests/Puppeteer/` (UI automation tests)
 
 ## 🔧 Environment Configuration
 

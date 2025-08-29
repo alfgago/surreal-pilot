@@ -18,13 +18,13 @@
 -   **Multi-Provider AI Integration**: OpenAI, Anthropic, Gemini; optional local Ollama
 -   **Streaming Chat API**: Real-time AI responses with SSE; per-chunk credit deductions
 -   **Credit-Based Usage System**: Company-based credit management with plans and top-ups
--   **Role & Plan Gating**: Filament Companies + plan capabilities (Unreal, Multiplayer, Advanced Publish, BYO keys)
+-   **Role & Plan Gating**: Company-based plan capabilities (Unreal, Multiplayer, Advanced Publish, BYO keys)
 -   **Unreal Engine Plugin**: Prompt-driven Blueprint/C++ edits with FScopedTransaction
 -   **Web & Mobile (PlayCanvas)**: Headless MCP server per workspace for instant preview via iframe
 
 ### Deployment Options
 
--   **Web SaaS**: Marketing landing + app; admin via Filament Companies
+-   **Web SaaS**: Marketing landing + app with React/Inertia interface
 -   **Desktop Application**: NativePHP/Electron app with local status and chat
 -   **Hybrid Architecture**: MCP per-workspace + SaaS API
 
@@ -334,7 +334,7 @@ cd UnrealEngine/SurrealPilot
 
 6. **Plan & Role Gating**
 
-    - Filament Companies + Plan capabilities (Unreal, Multiplayer, Advanced Publish, BYO)
+    - Company-based plan capabilities (Unreal, Multiplayer, Advanced Publish, BYO)
     - Middleware enforcement and UI CTAs
 
 7. **NativePHP Desktop Application**
@@ -423,7 +423,7 @@ SurrealPilot is open-sourced software licensed under the [MIT license](LICENSE).
 ## 🙏 Acknowledgments
 
 -   **Laravel Team**: For the amazing framework
--   **Filament Team**: For the beautiful admin panel
+-   **Inertia.js Team**: For the seamless React integration
 -   **NativePHP Team**: For desktop application capabilities
 -   **Prism-PHP**: For multi-provider AI integration
 -   **Epic Games**: For Unreal Engine and development tools

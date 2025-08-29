@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Wallo\FilamentCompanies\FilamentCompanies;
 
 class UserFactory extends Factory
 {
@@ -55,10 +54,6 @@ class UserFactory extends Factory
      */
     public function withPersonalCompany(?callable $callback = null): static
     {
-        if (! FilamentCompanies::hasCompanyFeatures()) {
-            return $this->state([]);
-        }
-
         return $this->has(
             Company::factory()
                 ->state(fn (array $attributes, User $user) => [

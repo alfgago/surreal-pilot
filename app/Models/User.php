@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Models\Contracts\HasAvatar;
-use Filament\Models\Contracts\HasDefaultTenant;
-use Filament\Models\Contracts\HasTenants;
-use Filament\Panel;
+// use Filament\Models\Contracts\FilamentUser;
+// use Filament\Models\Contracts\HasAvatar;
+// use Filament\Models\Contracts\HasDefaultTenant;
+// use Filament\Models\Contracts\HasTenants;
+// use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,7 +18,7 @@ use Illuminate\Support\Collection;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, HasAvatar, HasDefaultTenant, HasTenants
+class User extends Authenticatable // implements FilamentUser, HasAvatar, HasDefaultTenant, HasTenants
 {
     use HasApiTokens;
     use HasFactory;
@@ -36,6 +36,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasDefaul
         'password',
         'selected_engine_type',
         'current_company_id',
+        'preferences',
+        'avatar_url',
+        'bio',
+        'timezone',
+        'email_notifications',
+        'browser_notifications',
     ];
 
     /**
@@ -65,30 +71,33 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasDefaul
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'preferences' => 'array',
+            'email_notifications' => 'boolean',
+            'browser_notifications' => 'boolean',
         ];
     }
 
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return true;
-    }
+    // public function canAccessPanel(Panel $panel): bool
+    // {
+    //     return true;
+    // }
 
-    public function canAccessTenant(Model $tenant): bool
-    {
-        return $tenant instanceof Company
-            ? ($tenant->user_id === $this->id || $this->companies()->whereKey($tenant->getKey())->exists())
-            : false;
-    }
+    // public function canAccessTenant(Model $tenant): bool
+    // {
+    //     return $tenant instanceof Company
+    //         ? ($tenant->user_id === $this->id || $this->companies()->whereKey($tenant->getKey())->exists())
+    //         : false;
+    // }
 
-    public function getTenants(Panel $panel): array | Collection
-    {
-        return $this->companies()->get();
-    }
+    // public function getTenants(Panel $panel): array | Collection
+    // {
+    //     return $this->companies()->get();
+    // }
 
-    public function getDefaultTenant(Panel $panel): ?Model
-    {
-        return $this->currentCompany()->first() ?: $this->companies()->first();
-    }
+    // public function getDefaultTenant(Panel $panel): ?Model
+    // {
+    //     return $this->currentCompany()->first() ?: $this->companies()->first();
+    // }
 
     public function getFilamentAvatarUrl(): string
     {
@@ -134,5 +143,67 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, HasDefaul
     public function hasSelectedEngine(): bool
     {
         return !empty($this->selected_engine_type);
+    }
+
+    /**
+     * Get a user preference value.
+     */
+    public function getPreference(string $key, mixed $default = null): mixed
+    {
+        return data_get($this->preferences, $key, $default);
+    }
+
+    /**
+     * Set a user preference value.
+     */
+    public function setPreference(string $key, mixed $value): void
+    {
+        $preferences = $this->preferences ?? [];
+        data_set($preferences, $key, $value);
+        $this->update(['preferences' => $preferences]);
+    }
+
+    /**
+     * Get the user's avatar URL with fallback.
+     */
+    public function getAvatarUrl(): string
+    {
+        if ($this->avatar_url) {
+            return $this->avatar_url;
+        }
+
+        return $this->getFilamentAvatarUrl();
+    }
+
+    /**
+     * Get default AI provider preference.
+     */
+    public function getDefaultProvider(): string
+    {
+        return $this->getPreference('ai.default_provider', 'anthropic');
+    }
+
+    /**
+     * Get AI temperature preference.
+     */
+    public function getTemperature(): float
+    {
+        return (float) $this->getPreference('ai.temperature', 0.2);
+    }
+
+    /**
+     * Check if streaming responses are enabled.
+     */
+    public function hasStreamingEnabled(): bool
+    {
+        return (bool) $this->getPreference('ai.stream_responses', true);
+    }
+
+    /**
+     * Check if chat history saving is enabled.
+     */
+    public function hasChatHistoryEnabled(): bool
+    {
+        return (bool) $this->getPreference('ai.save_history', true);
     }
 }

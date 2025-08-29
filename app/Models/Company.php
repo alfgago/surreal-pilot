@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Filament\Models\Contracts\HasAvatar;
+// use Filament\Models\Contracts\HasAvatar;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Laravel\Cashier\Billable;
 
-class Company extends Model implements HasAvatar
+class Company extends Model // implements HasAvatar
 {
     use HasFactory, Billable;
 
@@ -35,6 +35,7 @@ class Company extends Model implements HasAvatar
         'openai_api_key_enc',
         'anthropic_api_key_enc',
         'gemini_api_key_enc',
+        'preferences',
     ];
 
     /**
@@ -56,6 +57,7 @@ class Company extends Model implements HasAvatar
             'credits' => 'decimal:2',
             'monthly_credit_limit' => 'decimal:2',
             'trial_ends_at' => 'datetime',
+            'preferences' => 'array',
         ];
     }
 
@@ -152,5 +154,13 @@ class Company extends Model implements HasAvatar
     public function workspaces(): HasMany
     {
         return $this->hasMany(Workspace::class);
+    }
+
+    /**
+     * Get the company invitations relationship.
+     */
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(CompanyInvitation::class);
     }
 }

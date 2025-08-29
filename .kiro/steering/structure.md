@@ -3,7 +3,7 @@
 ## Laravel Application Structure
 
 ### Core Application (`app/`)
-- **Actions/**: FilamentCompanies actions for team management
+- **Actions/**: Team management actions
 - **Agents/**: AI agent classes (PlayCanvasAgent, UnrealAgent, Enhanced/)
 - **Console/Commands/**: Artisan commands for cleanup and maintenance
 - **Http/Controllers/**: API and web controllers organized by purpose
@@ -110,6 +110,6 @@
 - Real-time updates for multiplayer sessions
 
 ### Multi-Tenancy
-- Company-based isolation using Filament Companies
+- Company-based isolation using custom multi-tenancy
 - Workspace ownership and access control
 - Credit allocation per company

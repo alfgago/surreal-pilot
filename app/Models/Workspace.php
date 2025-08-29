@@ -18,6 +18,7 @@ class Workspace extends Model
      */
     protected $fillable = [
         'company_id',
+        'created_by',
         'name',
         'engine_type',
         'template_id',
@@ -49,6 +50,14 @@ class Workspace extends Model
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    /**
+     * Get the user who created the workspace.
+     */
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     /**
@@ -159,7 +168,12 @@ class Workspace extends Model
             // Validate PlayCanvas-specific requirements (skip in testing)
             if (!app()->environment('testing')) {
                 if ($workspace->engine_type === 'playcanvas' && $workspace->status === 'ready') {
-                    if (empty($workspace->mcp_port)) {
+                    // Check if using on-demand MCP strategy
+                    $metadata = $workspace->metadata ?? [];
+                    $mcpStrategy = $metadata['mcp_strategy'] ?? 'persistent';
+                    
+                    // Only require MCP port for persistent strategy
+                    if ($mcpStrategy === 'persistent' && empty($workspace->mcp_port)) {
                         throw new \InvalidArgumentException("PlayCanvas workspaces must have an MCP port when ready.");
                     }
                 }

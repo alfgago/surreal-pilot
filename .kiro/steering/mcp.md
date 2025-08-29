@@ -5,17 +5,15 @@ SurrealPilot uses MCP servers to extend AI capabilities with specialized tools f
 
 ## Configured MCP Servers
 
-### Puppeteer MCP
-- **Purpose**: Browser automation and end-to-end testing
-- **Location**: Local server at `mcp-servers/puppeteer-mcp/server.js`
+### Ref Tools MCP
+- **Purpose**: Access to comprehensive documentation and reference materials
+- **Type**: HTTP-based MCP server
+- **Key Resources**: Laravel, Inertia.js, PlayCanvas, React, TypeScript
 - **Key Tools**:
-  - `launch_browser`: Start browser instances for testing
-  - `navigate_to_url`: Navigate to specific URLs
-  - `take_screenshot`: Capture page screenshots
-  - `click_element`: Interact with page elements
-  - `type_text`: Input text into forms
-  - `get_page_content`: Extract page content
-  - `test_game_generation`: Specialized SurrealPilot workflow testing
+  - `search_docs`: Search documentation across multiple libraries and frameworks
+  - `get_doc`: Retrieve specific documentation pages
+  - `list_libraries`: List available documentation libraries
+- **Usage**: Always use Ref Tools for documentation lookup instead of general web search
 
 ### Laravel Boost MCP
 - **Purpose**: Laravel development acceleration with context-aware tools and documentation
@@ -41,37 +39,49 @@ SurrealPilot uses MCP servers to extend AI capabilities with specialized tools f
 
 ## Usage Guidelines
 
+### Documentation Lookup Workflow
+**ALWAYS use Ref Tools first for documentation:**
+1. Use `search_docs` to find relevant documentation for Laravel, Inertia.js, PlayCanvas
+2. Use `get_doc` to retrieve specific documentation pages
+3. Reference official documentation before providing code examples
+4. Focus on these key resources:
+   - **Laravel**: Framework documentation, best practices, API reference
+   - **Inertia.js**: React integration, routing, data sharing
+   - **PlayCanvas**: Game engine API, components, scripting
+
 ### Laravel Development Workflow
 When working on Laravel features:
 1. Use `application_info` to understand the current Laravel setup and installed packages
 2. Use `database_schema` to understand the current database structure
-3. Use `search_docs` to find relevant Laravel documentation for your specific package versions
+3. Use Ref Tools `search_docs` for Laravel documentation lookup
 4. Use `tinker` to test code snippets and explore the application context
 5. Use `list_routes` and `list_artisan_commands` to understand available functionality
 
 ### Testing Workflow
-When implementing testing features:
-1. Use Puppeteer MCP for browser automation
-2. Create comprehensive test scenarios
-3. Capture screenshots for visual verification
-4. Test both desktop and mobile interfaces
+Testing is now handled by Pest 4 with browser testing capabilities:
+1. Use Pest 4 for unit, feature, and browser tests
+2. Leverage Pest's browser testing for end-to-end scenarios
+3. Write expressive, readable tests using Pest's syntax
+4. Use Pest's built-in assertions and helpers
 
 ### Best Practices
-- Use `application_info` at the start of development sessions to understand the current setup
-- Leverage `search_docs` for version-specific Laravel documentation
+- **Always consult Ref Tools** for documentation before writing code
+- Use `application_info` at the start of development sessions
 - Use `database_query` for exploring data patterns before writing code
 - Use `tinker` to prototype and test code before implementation
 - Use `get_config` to understand application configuration
 - Check `last_error` and `browser_logs` when debugging issues
+- Write comprehensive Pest tests for all new features
 
 ## Auto-Approved Tools
-Both servers have comprehensive auto-approval for development efficiency:
+All servers have comprehensive auto-approval for development efficiency:
+- All Ref Tools are auto-approved for seamless documentation access
 - All Laravel Boost tools are auto-approved for rapid development
-- All Puppeteer tools are auto-approved for seamless testing
 
 ## Installation Requirements
+- **Ref Tools**: HTTP-based server, no local installation required
 - **Laravel Boost**: Installed via Composer as a dev dependency, configured with `php artisan boost:install`
-- **Puppeteer**: Uses local Node.js server (already configured)
+- **Pest 4**: Installed via Composer for testing with browser capabilities
 
 ## Configuration Location
 MCP servers are configured in `.kiro/settings/mcp.json` with environment variables and auto-approval settings.

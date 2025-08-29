@@ -23,12 +23,12 @@ class CompanyFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->company(),
+            'name' => 'Test Company ' . rand(1000, 9999),
             'user_id' => User::factory(),
             'personal_company' => true,
-            'credits' => $this->faker->numberBetween(0, 5000),
-            'plan' => $this->faker->randomElement(['starter', 'pro', 'enterprise']),
-            'monthly_credit_limit' => $this->faker->numberBetween(1000, 10000),
+            'credits' => rand(0, 5000),
+            'plan' => 'starter',
+            'monthly_credit_limit' => rand(1000, 10000),
         ];
     }
 }

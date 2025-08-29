@@ -6,6 +6,8 @@ use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\EngineController;
 use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\PrototypeController;
+use App\Http\Controllers\Api\RealtimeChatController;
+use App\Http\Controllers\Api\StreamingChatController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -46,13 +48,22 @@ Route::middleware(['auth:sanctum'])->group(function () {
 // Provider information route (no middleware needed)
 Route::get('/providers', [AssistController::class, 'providers']);
 
+// Billing and credit management API routes
+Route::middleware(['auth.sanctum_or_web'])->prefix('billing')->group(function () {
+    Route::get('/balance', [\App\Http\Controllers\Api\BillingController::class, 'balance']);
+    Route::get('/analytics', [\App\Http\Controllers\Api\BillingController::class, 'analytics']);
+    Route::get('/transactions', [\App\Http\Controllers\Api\BillingController::class, 'transactions']);
+    Route::get('/subscription', [\App\Http\Controllers\Api\BillingController::class, 'subscription']);
+    Route::get('/summary', [\App\Http\Controllers\Api\BillingController::class, 'summary']);
+});
+
 // Role information route (requires authentication)
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/role-info', [AssistController::class, 'roleInfo']);
 });
 
-// Engine selection routes
-Route::middleware(['auth:sanctum'])->group(function () {
+// Engine selection routes (web-based, use web middleware)
+Route::middleware(['web', 'auth'])->group(function () {
     Route::get('/engines', [EngineController::class, 'getEngines']);
     Route::post('/user/engine-preference', [EngineController::class, 'setEnginePreference']);
     Route::get('/user/engine-preference', [EngineController::class, 'getEnginePreference']);
@@ -70,14 +81,43 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/conversations/recent', [ConversationController::class, 'getRecentConversations']);
 });
 
+// Real-time chat features
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Streaming chat
+    Route::post('/chat/stream', [StreamingChatController::class, 'stream']);
+    
+    // Typing indicators
+    Route::post('/conversations/{conversationId}/typing', [RealtimeChatController::class, 'updateTypingStatus']);
+    Route::get('/conversations/{conversationId}/typing', [RealtimeChatController::class, 'getTypingUsers']);
+    
+    // Connection status
+    Route::post('/workspaces/{workspaceId}/connection', [RealtimeChatController::class, 'updateConnectionStatus']);
+    Route::get('/workspaces/{workspaceId}/connections', [RealtimeChatController::class, 'getConnectionStatuses']);
+    Route::get('/workspaces/{workspaceId}/chat-stats', [RealtimeChatController::class, 'getChatStatistics']);
+    
+    // Real-time collaboration features
+    Route::get('/workspaces/{workspaceId}/collaboration-stats', [RealtimeChatController::class, 'getCollaborationStats']);
+    Route::post('/workspaces/{workspaceId}/collaboration/join', [RealtimeChatController::class, 'joinCollaboration']);
+    Route::post('/workspaces/{workspaceId}/collaboration/leave', [RealtimeChatController::class, 'leaveCollaboration']);
+});
+
 // Games management routes
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/workspaces/{workspaceId}/games', [GameController::class, 'getWorkspaceGames']);
     Route::post('/workspaces/{workspaceId}/games', [GameController::class, 'createGame']);
     Route::get('/games/recent', [GameController::class, 'getRecentGames']);
     Route::get('/games/{gameId}', [GameController::class, 'getGame']);
+    Route::get('/games/{gameId}/preview', [GameController::class, 'getGamePreview']);
     Route::put('/games/{gameId}', [GameController::class, 'updateGame']);
     Route::delete('/games/{gameId}', [GameController::class, 'deleteGame']);
+    
+    // Game publishing and build management
+    Route::post('/games/{game}/build', [\App\Http\Controllers\Api\GamePublishingController::class, 'startBuild']);
+    Route::get('/games/{game}/build/status', [\App\Http\Controllers\Api\GamePublishingController::class, 'getBuildStatus']);
+    Route::get('/games/{game}/build/history', [\App\Http\Controllers\Api\GamePublishingController::class, 'getBuildHistory']);
+    Route::post('/games/{game}/publish', [\App\Http\Controllers\Api\GamePublishingController::class, 'publishGame']);
+    Route::post('/games/{game}/unpublish', [\App\Http\Controllers\Api\GamePublishingController::class, 'unpublishGame']);
+    Route::post('/games/{game}/share-token', [\App\Http\Controllers\Api\GamePublishingController::class, 'generateShareToken']);
 });
 
 // Chat settings management routes
@@ -87,6 +127,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chat/models', [ChatSettingsController::class, 'getModels']);
     Route::post('/chat/settings/reset', [ChatSettingsController::class, 'resetSettings']);
     Route::get('/chat/settings/{engineType}', [ChatSettingsController::class, 'getEngineSettings']);
+    
+    // API Key Management
+    Route::get('/chat/api-keys', [ChatSettingsController::class, 'getApiKeys']);
+    Route::post('/chat/api-keys', [ChatSettingsController::class, 'saveApiKeys']);
+    Route::delete('/chat/api-keys', [ChatSettingsController::class, 'deleteApiKeys']);
 });
 
 // Credit management routes
@@ -115,6 +160,27 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/multiplayer/{sessionId}/files', [\App\Http\Controllers\Api\MultiplayerController::class, 'listProgress']);
     Route::get('/multiplayer/stats', [\App\Http\Controllers\Api\MultiplayerController::class, 'stats']);
     Route::get('/multiplayer/active', [\App\Http\Controllers\Api\MultiplayerController::class, 'activeSessions']);
+});
+
+// Engine integration routes
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Engine status and management
+    Route::get('/workspaces/{workspaceId}/engine/status', [EngineController::class, 'getEngineStatus']);
+    Route::get('/workspaces/{workspaceId}/context', [EngineController::class, 'getWorkspaceContext']);
+    
+    // Unreal Engine specific routes
+    Route::get('/workspaces/{workspaceId}/unreal/status', [EngineController::class, 'getUnrealStatus']);
+    Route::post('/workspaces/{workspaceId}/unreal/test', [EngineController::class, 'testUnrealConnection']);
+    
+    // PlayCanvas specific routes
+    Route::get('/workspaces/{workspaceId}/playcanvas/status', [EngineController::class, 'getPlayCanvasStatus']);
+    Route::post('/workspaces/{workspaceId}/playcanvas/refresh', [EngineController::class, 'refreshPlayCanvasPreview']);
+    Route::post('/workspaces/{workspaceId}/playcanvas/start', [EngineController::class, 'startPlayCanvasMcp']);
+    Route::post('/workspaces/{workspaceId}/playcanvas/stop', [EngineController::class, 'stopPlayCanvasMcp']);
+    
+    // Engine AI configuration
+    Route::get('/engine/{engineType}/ai-config', [EngineController::class, 'getEngineAiConfig']);
+    Route::put('/engine/{engineType}/ai-config', [EngineController::class, 'updateEngineAiConfig']);
 });
 
 // Mobile-specific API routes

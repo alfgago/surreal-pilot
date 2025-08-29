@@ -21,6 +21,11 @@ Route::post('/logout', function () {
 
 // Main app routes (require authentication)
 Route::middleware('auth')->group(function () {
+    // Dashboard route
+    Route::get('/dashboard', function () {
+        return \Inertia\Inertia::render('Dashboard');
+    })->name('dashboard');
+    
     // Engine selection routes
     Route::get('/engine-selection', [EngineSelectionController::class, 'index'])->name('engine.selection');
     Route::post('/engine-selection', [EngineSelectionController::class, 'select'])->name('engine.select');
@@ -32,9 +37,40 @@ Route::middleware('auth')->group(function () {
     Route::post('/workspace-selection/create', [WorkspaceSelectionController::class, 'create'])->name('workspace.create');
     Route::get('/workspace-selection/templates', [WorkspaceSelectionController::class, 'getTemplates'])->name('workspace.templates');
     
+    // Workspace routes (redirect to workspace selection for now)
+    Route::get('/workspaces', function () {
+        return redirect()->route('workspace.selection');
+    })->name('workspaces.index');
+    Route::get('/workspaces/create', function () {
+        return redirect()->route('workspace.selection');
+    })->name('workspaces.create');
+    Route::get('/workspaces/{workspace}', function ($workspace) {
+        return redirect()->route('workspace.selection');
+    })->name('workspaces.show');
+    
     Route::get('/chat', [ChatController::class, 'index'])->name('chat');
-    Route::get('/games', [GamesController::class, 'index'])->name('games');
-    Route::get('/games/{id}', [GamesController::class, 'show'])->name('games.show');
+    
+    // Games management routes
+    Route::get('/games', [GamesController::class, 'index'])->name('games.index');
+    Route::get('/games/create', [GamesController::class, 'create'])->name('games.create');
+    Route::post('/games', [GamesController::class, 'store'])->name('games.store');
+    Route::get('/games/{game}', [GamesController::class, 'show'])->name('games.show');
+    Route::get('/games/{game}/edit', [GamesController::class, 'edit'])->name('games.edit');
+    Route::put('/games/{game}', [GamesController::class, 'update'])->name('games.update');
+    Route::delete('/games/{game}', [GamesController::class, 'destroy'])->name('games.destroy');
+    Route::get('/games/{game}/play', [GamesController::class, 'play'])->name('games.play');
+    
+    // Templates routes
+    Route::get('/templates', [\App\Http\Controllers\TemplatesController::class, 'index'])->name('templates.index');
+    Route::get('/templates/{template}', [\App\Http\Controllers\TemplatesController::class, 'show'])->name('templates.show');
+    
+    // History routes
+    Route::get('/history', [\App\Http\Controllers\HistoryController::class, 'index'])->name('history.index');
+    
+    // Multiplayer routes
+    Route::get('/multiplayer', [\App\Http\Controllers\MultiplayerController::class, 'index'])->name('multiplayer.index');
+    Route::get('/multiplayer/{sessionId}', [\App\Http\Controllers\MultiplayerController::class, 'show'])->name('multiplayer.show');
+    
     Route::get('/unreal-copilot', function () {
         return redirect('/chat')->with('engine_type', 'unreal');
     })->name('unreal.copilot');
@@ -42,14 +78,41 @@ Route::middleware('auth')->group(function () {
         return redirect('/chat')->with('engine_type', 'playcanvas');
     })->name('web.mobile.games');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
     Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
-    Route::get('/company/settings', [CompanyController::class, 'settings']);
-    Route::patch('/company/settings', [CompanyController::class, 'updateSettings']);
-    Route::post('/company/invite', [CompanyController::class, 'invite']);
-    Route::get('/company/billing', [CompanyController::class, 'billing']);
-    Route::get('/company/provider-settings', [CompanyController::class, 'providerSettings']);
-    Route::patch('/company/provider-settings', [CompanyController::class, 'updateProviderSettings']);
+    Route::patch('/settings/api-keys', [SettingsController::class, 'updateApiKeys'])->name('settings.api-keys.update');
+    Route::delete('/settings/api-keys/{provider}', [SettingsController::class, 'removeApiKey'])->name('settings.api-keys.remove');
+    Route::get('/company/settings', [CompanyController::class, 'settings'])->name('company.settings');
+    Route::patch('/company/settings', [CompanyController::class, 'updateSettings'])->name('company.settings.update');
+    Route::post('/company/invite', [CompanyController::class, 'invite'])->name('company.invite');
+    Route::delete('/company/users/{user}', [CompanyController::class, 'removeUser'])->name('company.users.remove');
+    Route::delete('/company/invitations/{invitation}', [CompanyController::class, 'cancelInvitation'])->name('company.invitations.cancel');
+    Route::patch('/company/users/{user}/role', [CompanyController::class, 'updateUserRole'])->name('company.users.role.update');
+    Route::patch('/company/preferences', [CompanyController::class, 'updatePreferences'])->name('company.preferences.update');
+    Route::get('/company/billing', [CompanyController::class, 'billing'])->name('company.billing');
+    Route::get('/company/provider-settings', [CompanyController::class, 'providerSettings'])->name('company.provider-settings');
+    Route::patch('/company/provider-settings', [CompanyController::class, 'updateProviderSettings'])->name('company.provider-settings.update');
+    
+    // Redesign demo route
+    Route::get('/redesign-demo', function () {
+        return view('redesign-demo');
+    })->name('redesign.demo');
+    
+    // Component test route
+    Route::get('/component-test', function () {
+        return \Inertia\Inertia::render('ComponentTest');
+    })->name('component.test');
+    
+    // Layout test route
+    Route::get('/layout-test', function () {
+        return \Inertia\Inertia::render('LayoutTest');
+    })->name('layout.test');
+    
+    // AI Thinking Display test route
+    Route::get('/ai-thinking-test', function () {
+        return \Inertia\Inertia::render('AIThinkingTest');
+    })->name('ai.thinking.test');
 });
 
 // Home routes - redirect based on user state
@@ -70,17 +133,41 @@ Route::get('/', function () {
         // Otherwise go to chat
         return redirect('/chat');
     }
-    // For guests, show lightweight landing (no layout usage to avoid route lookups)
-    return view('landing');
+    // For guests, show welcome page with Inertia
+    return \Inertia\Inertia::render('Welcome');
 })->name('home');
 
-// Basic Auth routes (temporary MVP)
+// Authentication routes
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    
+    // Password reset routes
+    Route::get('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'create'])
+        ->name('password.request');
+    Route::post('/forgot-password', [\App\Http\Controllers\Auth\PasswordResetLinkController::class, 'store'])
+        ->name('password.email');
+    Route::get('/reset-password/{token}', [\App\Http\Controllers\Auth\NewPasswordController::class, 'create'])
+        ->name('password.reset');
+    Route::post('/reset-password', [\App\Http\Controllers\Auth\NewPasswordController::class, 'store'])
+        ->name('password.store');
 });
+
+// Debug route for testing authentication
+Route::get('/debug-auth', function () {
+    return response()->json([
+        'authenticated' => auth()->check(),
+        'user' => auth()->user() ? [
+            'id' => auth()->user()->id,
+            'name' => auth()->user()->name,
+            'email' => auth()->user()->email,
+        ] : null,
+        'session_id' => session()->getId(),
+        'csrf_token' => csrf_token(),
+    ]);
+})->middleware('web');
 
 // PWA manifest route
 Route::get('/manifest.json', function () {
@@ -129,8 +216,28 @@ Route::post('/stripe/webhook', [StripeWebhookController::class, 'handleWebhook']
 Route::middleware(['auth'])->group(function () {
     Route::post('/billing/checkout/subscription', [\App\Http\Controllers\BillingController::class, 'createSubscriptionSession']);
     Route::post('/billing/checkout/topup', [\App\Http\Controllers\BillingController::class, 'createTopUpSession']);
+    Route::post('/billing/setup-payment-method', [\App\Http\Controllers\BillingController::class, 'setupPaymentMethod']);
+    Route::post('/billing/payment-methods/{paymentMethod}/delete', [\App\Http\Controllers\BillingController::class, 'deletePaymentMethod']);
+    Route::post('/billing/payment-methods/{paymentMethod}/default', [\App\Http\Controllers\BillingController::class, 'setDefaultPaymentMethod']);
 });
 
 // Checkout result pages
 Route::view('/billing/success', 'billing.success')->name('billing.success');
 Route::view('/billing/cancel', 'billing.cancel')->name('billing.cancel');
+
+// Public pages
+Route::get('/privacy', function () {
+    return \Inertia\Inertia::render('Public/Privacy');
+})->name('privacy');
+
+Route::get('/terms', function () {
+    return \Inertia\Inertia::render('Public/Terms');
+})->name('terms');
+
+Route::get('/support', function () {
+    return \Inertia\Inertia::render('Public/Support');
+})->name('support');
+
+// Public game sharing routes (no authentication required)
+Route::get('/games/shared/{shareToken}', [\App\Http\Controllers\PublicGameController::class, 'showSharedGame'])->name('games.shared');
+Route::get('/games/embed/{shareToken}', [\App\Http\Controllers\PublicGameController::class, 'embedGame'])->name('games.embed');

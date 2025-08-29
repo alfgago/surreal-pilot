@@ -16,11 +16,11 @@ class AuthSanctumOrWeb
         // Prefer Sanctum user if present
         $user = $request->user();
 
-        // In testing, fall back to web guard session user
-        if (!$user && app()->environment('testing')) {
+        // Fall back to web guard session user for web-based API requests
+        if (!$user) {
             $user = auth('web')->user();
             if ($user) {
-                // Impersonate on the request so downstream middlewares see a user
+                // Set the user on the request so downstream middlewares see a user
                 $request->setUserResolver(fn () => $user);
             }
         }

@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Workspace;
 use App\Services\EngineSelectionService;
+use App\Services\PlayCanvasMcpManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class WorkspaceSelectionController extends Controller
 {
     public function __construct(
-        private EngineSelectionService $engineSelectionService
+        private EngineSelectionService $engineSelectionService,
+        private PlayCanvasMcpManager $playCanvasMcpManager
     ) {}
 
     /**
@@ -36,7 +39,11 @@ class WorkspaceSelectionController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return view('workspace-selection', compact('engineInfo', 'workspaces', 'engineType'));
+        return \Inertia\Inertia::render('WorkspaceSelection', [
+            'engineInfo' => $engineInfo,
+            'workspaces' => $workspaces,
+            'engineType' => $engineType,
+        ]);
     }
 
     /**
@@ -62,7 +69,7 @@ class WorkspaceSelectionController extends Controller
         session(['selected_workspace_id' => $workspace->id]);
 
         // Redirect to chat with workspace context
-        return redirect()->route('chat', ['workspace' => $workspace->id])
+        return redirect()->route('chat')
             ->with('success', "Switched to workspace: {$workspace->name}");
     }
 
@@ -75,10 +82,14 @@ class WorkspaceSelectionController extends Controller
         $company = $user->currentCompany;
         $engineType = $user->getSelectedEngineType();
 
+        // Convert empty string to null for template_id before validation
+        if ($request->input('template_id') === '' || $request->input('template_id') === 'none') {
+            $request->merge(['template_id' => null]);
+        }
+
         $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'template_id' => 'nullable|integer|exists:demo_templates,id',
+            'template_id' => 'nullable|string|exists:demo_templates,id',
         ]);
 
         // Validate template is compatible with engine type if provided
@@ -91,26 +102,40 @@ class WorkspaceSelectionController extends Controller
             }
         }
 
-        // Create workspace
-        $workspace = Workspace::create([
-            'company_id' => $company->id,
-            'name' => $request->input('name'),
-            'description' => $request->input('description'),
-            'engine_type' => $engineType,
-            'template_id' => $request->input('template_id'),
-            'status' => 'active',
-            'metadata' => [
-                'created_by' => $user->id,
-                'engine_preference' => $engineType,
-            ],
-        ]);
+        try {
+            // Create workspace in ready state - MCP server will be started on-demand
+            $workspace = Workspace::create([
+                'company_id' => $company->id,
+                'name' => $request->input('name'),
+                'engine_type' => $engineType,
+                'template_id' => $request->input('template_id'),
+                'status' => 'ready', // Ready for use, MCP server starts when needed
+                'metadata' => [
+                    'created_by' => $user->id,
+                    'engine_preference' => $engineType,
+                    'mcp_strategy' => 'on_demand', // Flag for on-demand MCP servers
+                ],
+            ]);
 
-        // Store selected workspace in session
-        session(['selected_workspace_id' => $workspace->id]);
+            // Store selected workspace in session
+            session(['selected_workspace_id' => $workspace->id]);
 
-        // Redirect to chat with new workspace
-        return redirect()->route('chat', ['workspace' => $workspace->id])
-            ->with('success', "Workspace '{$workspace->name}' created successfully!");
+            // Redirect to chat with new workspace
+            return redirect()->route('chat')
+                ->with('success', "Workspace '{$workspace->name}' created successfully!");
+                
+        } catch (\Exception $e) {
+            Log::error('Failed to create workspace', [
+                'user_id' => $user->id,
+                'company_id' => $company->id,
+                'engine_type' => $engineType,
+                'error' => $e->getMessage()
+            ]);
+            
+            return back()->withErrors([
+                'name' => 'Failed to create workspace. Please try again.'
+            ]);
+        }
     }
 
     /**

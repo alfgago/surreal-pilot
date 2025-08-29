@@ -17,7 +17,7 @@ class ConversationController extends Controller
     ) {}
 
     /**
-     * Get conversations for a workspace.
+     * Get conversations for a workspace with pagination and search support.
      */
     public function getWorkspaceConversations(Request $request, int $workspaceId): JsonResponse
     {
@@ -29,23 +29,36 @@ class ConversationController extends Controller
                 ->where('company_id', $company->id)
                 ->firstOrFail();
 
-            $conversations = $this->conversationService->getWorkspaceConversations($workspace);
+            // Get pagination parameters
+            $page = max(1, (int) $request->query('page', 1));
+            $limit = min(100, max(1, (int) $request->query('limit', 20))); // Max 100, min 1
+            $search = $request->query('search');
 
-            $conversationsData = $conversations->map(function ($conversation) {
+            // Use paginated method for better performance
+            $result = $this->conversationService->getPaginatedWorkspaceConversations(
+                $workspace, 
+                $page, 
+                $limit, 
+                $search
+            );
+
+            $conversationsData = $result['conversations']->map(function ($conversation) {
                 return [
                     'id' => $conversation->id,
                     'title' => $conversation->title,
                     'description' => $conversation->description,
                     'created_at' => $conversation->created_at,
                     'updated_at' => $conversation->updated_at,
-                    'message_count' => $conversation->getMessageCount(),
-                    'last_message_preview' => $conversation->getLastMessagePreview(),
+                    'message_count' => $conversation->message_count,
+                    'last_message_preview' => $conversation->last_message_preview,
                 ];
             });
 
             return response()->json([
                 'success' => true,
                 'conversations' => $conversationsData,
+                'pagination' => $result['pagination'],
+                'has_more_pages' => $result['pagination']['has_more_pages'],
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -324,7 +337,7 @@ class ConversationController extends Controller
     }
 
     /**
-     * Get recent conversations across all workspaces.
+     * Get recent conversations across all workspaces with pagination and search support.
      */
     public function getRecentConversations(Request $request): JsonResponse
     {
@@ -332,10 +345,20 @@ class ConversationController extends Controller
             $user = $request->user();
             $company = $user->currentCompany;
 
-            $limit = $request->query('limit', 10);
-            $conversations = $this->conversationService->getRecentConversations($company->id, $limit);
+            // Get pagination parameters
+            $page = max(1, (int) $request->query('page', 1));
+            $limit = min(100, max(1, (int) $request->query('limit', 20))); // Max 100, min 1
+            $search = $request->query('search');
 
-            $conversationsData = $conversations->map(function ($conversation) {
+            // Use paginated method for better performance
+            $result = $this->conversationService->getPaginatedRecentConversations(
+                $company->id, 
+                $page, 
+                $limit, 
+                $search
+            );
+
+            $conversationsData = $result['conversations']->map(function ($conversation) {
                 return [
                     'id' => $conversation->id,
                     'title' => $conversation->title,
@@ -347,14 +370,16 @@ class ConversationController extends Controller
                     ],
                     'created_at' => $conversation->created_at,
                     'updated_at' => $conversation->updated_at,
-                    'message_count' => $conversation->getMessageCount(),
-                    'last_message_preview' => $conversation->getLastMessagePreview(),
+                    'message_count' => $conversation->message_count,
+                    'last_message_preview' => $conversation->last_message_preview,
                 ];
             });
 
             return response()->json([
                 'success' => true,
                 'conversations' => $conversationsData,
+                'pagination' => $result['pagination'],
+                'has_more_pages' => $result['pagination']['has_more_pages'],
             ]);
         } catch (\Exception $e) {
             return response()->json([

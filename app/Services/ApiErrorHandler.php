@@ -2,103 +2,28 @@
 
 namespace App\Services;
 
-use App\Models\Company;
-use Exception;
+use App\Services\ErrorMonitoringService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
-use Throwable;
+use Illuminate\Validation\ValidationException;
 
 class ApiErrorHandler
 {
-    /**
-     * Handle insufficient credits error.
-     */
-    public function handleInsufficientCredits(Company $company, int $estimatedTokens = 0, array $context = []): JsonResponse
-    {
-        $this->logError('insufficient_credits', 'Company has insufficient credits', array_merge([
-            'company_id' => $company->id,
-            'company_name' => $company->name,
-            'current_credits' => $company->credits,
-            'estimated_tokens' => $estimatedTokens,
-        ], $context));
-
-        // Persist to error logs for analytics/monitoring
-        try {
-            $errorMonitoring = app(\App\Services\ErrorMonitoringService::class);
-            $errorMonitoring->trackError(
-                'insufficient_credits',
-                'Company has insufficient credits',
-                request()->user(),
-                $company,
-                array_merge([
-                    'estimated_tokens' => $estimatedTokens,
-                ], $context)
-            );
-        } catch (\Throwable $e) {
-            // Swallow monitoring errors
-        }
-
-        return response()->json([
-            'error' => 'insufficient_credits',
-            'error_code' => 'INSUFFICIENT_CREDITS',
-            'message' => 'Your company has insufficient credits to process this request.',
-            'user_message' => 'Not enough credits available. Please purchase more credits or upgrade your plan.',
-            'data' => [
-                'credits_available' => $company->credits,
-                'estimated_tokens_needed' => $estimatedTokens,
-                'credits_needed' => max(0, $estimatedTokens - $company->credits),
-                'plan' => $company->plan,
-                'actions' => [
-                    'purchase_credits' => '/dashboard/billing/credits',
-                    'upgrade_plan' => '/dashboard/billing/plans',
-                    'view_usage' => '/dashboard/usage',
-                ],
-            ],
-        ], 402);
-    }
-
-    /**
-     * Handle provider unavailable error.
-     */
-    public function handleProviderUnavailable(string $requestedProvider = null, array $availableProviders = [], array $context = []): JsonResponse
-    {
-        $this->logError('provider_unavailable', 'AI provider is unavailable', array_merge([
-            'requested_provider' => $requestedProvider,
-            'available_providers' => $availableProviders,
-        ], $context));
-
-        return response()->json([
-            'error' => 'provider_unavailable',
-            'error_code' => 'PROVIDER_UNAVAILABLE',
-            'message' => $requestedProvider 
-                ? "The requested AI provider '{$requestedProvider}' is currently unavailable."
-                : 'No AI providers are currently available.',
-            'user_message' => 'AI service is temporarily unavailable. Please try again in a few moments or select a different provider.',
-            'data' => [
-                'requested_provider' => $requestedProvider,
-                'available_providers' => $availableProviders,
-                'fallback_suggestions' => $this->getFallbackSuggestions($availableProviders),
-                'actions' => [
-                    'retry' => 'Try the request again',
-                    'change_provider' => 'Select a different AI provider',
-                    'check_status' => '/api/providers',
-                ],
-            ],
-        ], 503);
-    }
+    public function __construct(
+        private ErrorMonitoringService $errorMonitoring
+    ) {}
 
     /**
      * Handle authentication errors.
      */
-    public function handleAuthenticationError(string $message = 'Authentication required', array $context = []): JsonResponse
+    public function handleAuthenticationError(string $message = 'Authentication required'): JsonResponse
     {
-        $this->logError('authentication_error', $message, $context);
-
         return response()->json([
+            'success' => false,
             'error' => 'authentication_required',
             'error_code' => 'AUTHENTICATION_REQUIRED',
             'message' => $message,
-            'user_message' => 'Please log in to access this feature.',
+            'user_message' => 'Please log in to access this resource.',
             'data' => [
                 'actions' => [
                     'login' => '/login',
@@ -109,336 +34,284 @@ class ApiErrorHandler
     }
 
     /**
-     * Handle authorization/permission errors.
+     * Handle authorization errors.
      */
-    public function handleAuthorizationError(string $message = 'Insufficient permissions', array $additionalData = [], array $context = []): JsonResponse
+    public function handleAuthorizationError(string $message = 'Access denied'): JsonResponse
     {
-        $this->logError('authorization_error', $message, array_merge($additionalData, $context));
-
         return response()->json([
+            'success' => false,
             'error' => 'access_denied',
-            'error_code' => 'INSUFFICIENT_PERMISSIONS',
+            'error_code' => 'ACCESS_DENIED',
             'message' => $message,
-            'user_message' => 'You don\'t have permission to perform this action. Contact your administrator if you need access.',
-            'data' => array_merge([
-                'actions' => [
-                    'contact_admin' => 'Contact your company administrator',
-                    'view_permissions' => '/dashboard/profile',
-                ],
-            ], $additionalData),
-        ], 403);
-    }
-
-    /**
-     * Handle rate limiting errors.
-     */
-    public function handleRateLimitError(int $retryAfter = 60, array $context = []): JsonResponse
-    {
-        $this->logError('rate_limit_exceeded', 'Rate limit exceeded', array_merge([
-            'retry_after' => $retryAfter,
-        ], $context));
-
-        return response()->json([
-            'error' => 'rate_limit_exceeded',
-            'error_code' => 'RATE_LIMIT_EXCEEDED',
-            'message' => 'Too many requests. Please slow down.',
-            'user_message' => "You're making requests too quickly. Please wait {$retryAfter} seconds before trying again.",
+            'user_message' => 'You don\'t have permission to access this resource.',
             'data' => [
-                'retry_after' => $retryAfter,
-                'retry_after_human' => $this->formatRetryAfter($retryAfter),
                 'actions' => [
-                    'wait_and_retry' => "Wait {$retryAfter} seconds and try again",
+                    'contact_admin' => 'Contact your administrator',
+                    'upgrade_plan' => '/dashboard/billing/plans',
                 ],
             ],
-        ], 429);
+        ], 403);
     }
 
     /**
      * Handle validation errors.
      */
-    public function handleValidationError(array $errors, string $message = 'Validation failed', array $context = []): JsonResponse
+    public function handleValidationError(array $errors, string $message = 'Validation failed'): JsonResponse
     {
-        $this->logError('validation_error', $message, array_merge([
-            'validation_errors' => $errors,
-        ], $context));
-
         return response()->json([
+            'success' => false,
             'error' => 'validation_failed',
             'error_code' => 'VALIDATION_FAILED',
             'message' => $message,
             'user_message' => 'Please check your input and try again.',
             'data' => [
-                'errors' => $errors,
+                'validation_errors' => $errors,
                 'actions' => [
-                    'fix_input' => 'Correct the highlighted fields and resubmit',
+                    'fix_errors' => 'Correct the highlighted fields',
+                    'retry' => 'Try submitting again',
                 ],
             ],
         ], 422);
     }
 
     /**
-     * Handle streaming errors.
+     * Handle rate limit errors.
      */
-    public function handleStreamingError(string $message = 'Streaming error occurred', array $context = []): JsonResponse
+    public function handleRateLimitError(int $retryAfter = 60): JsonResponse
     {
-        $this->logError('streaming_error', $message, $context);
-
         return response()->json([
-            'error' => 'streaming_error',
-            'error_code' => 'STREAMING_ERROR',
-            'message' => $message,
-            'user_message' => 'An error occurred while streaming the response. Please try again.',
+            'success' => false,
+            'error' => 'rate_limit_exceeded',
+            'error_code' => 'RATE_LIMIT_EXCEEDED',
+            'message' => 'Too many requests. Please try again later.',
+            'user_message' => "You've made too many requests. Please wait {$retryAfter} seconds before trying again.",
             'data' => [
+                'retry_after' => $retryAfter,
                 'actions' => [
-                    'retry' => 'Try the request again',
-                    'disable_streaming' => 'Try without streaming',
+                    'wait_and_retry' => "Wait {$retryAfter} seconds and try again",
+                    'upgrade_plan' => 'Upgrade your plan for higher limits',
                 ],
             ],
-        ], 500);
-    }
-
-    /**
-     * Handle credit transaction errors.
-     */
-    public function handleCreditTransactionError(string $message = 'Credit transaction failed', array $context = []): JsonResponse
-    {
-        $this->logError('credit_transaction_error', $message, $context);
-
-        return response()->json([
-            'error' => 'credit_transaction_failed',
-            'error_code' => 'CREDIT_TRANSACTION_FAILED',
-            'message' => $message,
-            'user_message' => 'There was an issue processing your credits. Please contact support if this persists.',
-            'data' => [
-                'actions' => [
-                    'retry' => 'Try the request again',
-                    'contact_support' => 'Contact customer support',
-                    'check_balance' => '/dashboard/billing',
-                ],
-            ],
-        ], 500);
-    }
-
-    /**
-     * Handle company not found errors.
-     */
-    public function handleCompanyNotFound(array $context = []): JsonResponse
-    {
-        $this->logError('company_not_found', 'No active company found', $context);
-
-        return response()->json([
-            'error' => 'no_active_company',
-            'error_code' => 'NO_ACTIVE_COMPANY',
-            'message' => 'No active company found for the current user.',
-            'user_message' => 'You need to be part of a company to use this feature. Please join or create a company.',
-            'data' => [
-                'actions' => [
-                    'create_company' => '/dashboard/companies/create',
-                    'join_company' => '/dashboard/companies/join',
-                ],
-            ],
-        ], 400);
-    }
-
-    /**
-     * Handle general API errors.
-     */
-    public function handleGeneralError(Throwable $exception, string $userMessage = 'An unexpected error occurred', array $context = []): JsonResponse
-    {
-        $this->logError('general_error', $exception->getMessage(), array_merge([
-            'exception_class' => get_class($exception),
-            'file' => $exception->getFile(),
-            'line' => $exception->getLine(),
-            'trace' => $exception->getTraceAsString(),
-        ], $context));
-
-        return response()->json([
-            'error' => 'internal_server_error',
-            'error_code' => 'INTERNAL_SERVER_ERROR',
-            'message' => 'An internal server error occurred.',
-            'user_message' => $userMessage,
-            'data' => [
-                'error_id' => $this->generateErrorId(),
-                'actions' => [
-                    'retry' => 'Try the request again',
-                    'contact_support' => 'Contact support with error ID if problem persists',
-                ],
-            ],
-        ], 500);
-    }
-
-    /**
-     * Handle provider API errors (from external services).
-     */
-    public function handleProviderApiError(string $provider, Throwable $exception, array $context = []): JsonResponse
-    {
-        $this->logError('provider_api_error', "Provider {$provider} API error: " . $exception->getMessage(), array_merge([
-            'provider' => $provider,
-            'exception_class' => get_class($exception),
-        ], $context));
-
-        return response()->json([
-            'error' => 'provider_api_error',
-            'error_code' => 'PROVIDER_API_ERROR',
-            'message' => "The {$provider} AI service encountered an error.",
-            'user_message' => 'The AI service is experiencing issues. Please try again or select a different provider.',
-            'data' => [
-                'provider' => $provider,
-                'actions' => [
-                    'retry' => 'Try the request again',
-                    'change_provider' => 'Select a different AI provider',
-                ],
-            ],
-        ], 502);
+        ], 429, [
+            'Retry-After' => $retryAfter,
+        ]);
     }
 
     /**
      * Handle timeout errors.
      */
-    public function handleTimeoutError(int $timeoutSeconds = 30, array $context = []): JsonResponse
+    public function handleTimeoutError(string $message = 'Request timeout'): JsonResponse
     {
-        $this->logError('timeout_error', "Request timed out after {$timeoutSeconds} seconds", array_merge([
-            'timeout_seconds' => $timeoutSeconds,
-        ], $context));
-
         return response()->json([
+            'success' => false,
             'error' => 'request_timeout',
             'error_code' => 'REQUEST_TIMEOUT',
-            'message' => 'The request timed out.',
-            'user_message' => 'The request took too long to process. Please try again with a shorter prompt or different settings.',
+            'message' => $message,
+            'user_message' => 'The request took too long to complete. Please try again.',
             'data' => [
-                'timeout_seconds' => $timeoutSeconds,
                 'actions' => [
                     'retry' => 'Try the request again',
-                    'reduce_complexity' => 'Try with a shorter or simpler prompt',
+                    'simplify_request' => 'Try with less data',
+                    'contact_support' => 'Contact support if the problem persists',
                 ],
             ],
         ], 408);
     }
 
     /**
-     * Send Server-Sent Event error.
+     * Handle company not found errors.
      */
-    public function sendSSEError(string $errorType, string $message, array $data = []): void
+    public function handleCompanyNotFound(): JsonResponse
     {
-        $errorData = array_merge([
-            'error' => $errorType,
-            'message' => $message,
-            'timestamp' => now()->toISOString(),
-        ], $data);
-
-        echo "event: error\n";
-        echo "data: " . json_encode($errorData) . "\n\n";
-        
-        if (ob_get_level()) {
-            ob_flush();
-        }
-        flush();
+        return response()->json([
+            'success' => false,
+            'error' => 'company_not_found',
+            'error_code' => 'COMPANY_NOT_FOUND',
+            'message' => 'No company associated with your account.',
+            'user_message' => 'You need to be part of a company to access this resource.',
+            'data' => [
+                'actions' => [
+                    'create_company' => '/dashboard/company/create',
+                    'join_company' => 'Ask for an invitation to join a company',
+                    'contact_support' => 'Contact support for help',
+                ],
+            ],
+        ], 404);
     }
 
     /**
-     * Log error with consistent format.
+     * Handle general errors.
      */
-    private function logError(string $errorType, string $message, array $context = []): void
+    public function handleGeneralError(\Throwable $exception, string $userMessage = 'An error occurred'): JsonResponse
     {
-        try {
-            Log::error("API Error: {$errorType}", array_merge([
-            'error_type' => $errorType,
-            'message' => $message,
-            'timestamp' => now()->toISOString(),
-            'request_id' => request()->header('X-Request-ID') ?? $this->generateErrorId(),
-            ], $context));
-        } catch (\Throwable $ignored) {}
-    }
-
-    /**
-     * Generate unique error ID for tracking.
-     */
-    private function generateErrorId(): string
-    {
-        return 'err_' . uniqid() . '_' . substr(md5(microtime()), 0, 8);
-    }
-
-    /**
-     * Format retry after seconds into human readable format.
-     */
-    private function formatRetryAfter(int $seconds): string
-    {
-        if ($seconds < 60) {
-            return "{$seconds} seconds";
-        }
+        $isDevelopment = config('app.debug', false);
         
-        $minutes = floor($seconds / 60);
-        $remainingSeconds = $seconds % 60;
-        
-        if ($remainingSeconds === 0) {
-            return $minutes == 1 ? "1 minute" : "{$minutes} minutes";
-        }
-        
-        return $minutes == 1 
-            ? "1 minute and {$remainingSeconds} seconds"
-            : "{$minutes} minutes and {$remainingSeconds} seconds";
-    }
+        // Log the error
+        Log::error('General API error', [
+            'exception' => $exception->getMessage(),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => $isDevelopment ? $exception->getTraceAsString() : null,
+            'request_id' => request()->header('X-Request-ID'),
+            'url' => request()->fullUrl(),
+            'method' => request()->method(),
+            'user_id' => auth()->id(),
+        ]);
 
-    /**
-     * Get fallback suggestions based on available providers.
-     */
-    private function getFallbackSuggestions(array $availableProviders): array
-    {
-        if (empty($availableProviders)) {
-            return [
-                'message' => 'No providers are currently available. Please try again later.',
-                'suggestions' => [],
+        // Track error in monitoring system
+        $this->errorMonitoring->trackError(
+            'general_api_error',
+            $exception->getMessage(),
+            auth()->user(),
+            auth()->user()?->currentCompany,
+            [
+                'exception_class' => get_class($exception),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+            ]
+        );
+
+        $responseData = [
+            'success' => false,
+            'error' => 'internal_server_error',
+            'error_code' => 'INTERNAL_SERVER_ERROR',
+            'message' => $isDevelopment ? $exception->getMessage() : 'An internal server error occurred.',
+            'user_message' => $userMessage,
+            'data' => [
+                'request_id' => request()->header('X-Request-ID'),
+                'actions' => [
+                    'retry' => 'Try the request again',
+                    'contact_support' => 'Contact support with the request ID',
+                ],
+            ],
+        ];
+
+        // Add debug information in development
+        if ($isDevelopment) {
+            $responseData['debug'] = [
+                'exception_class' => get_class($exception),
+                'file' => $exception->getFile(),
+                'line' => $exception->getLine(),
+                'trace' => $exception->getTraceAsString(),
             ];
         }
 
-        return [
-            'message' => 'Try one of these available providers:',
-            'suggestions' => array_map(function ($provider) {
-                return [
-                    'provider' => $provider,
-                    'display_name' => ucfirst($provider),
-                ];
-            }, $availableProviders),
-        ];
+        return response()->json($responseData, 500);
     }
 
     /**
-     * Check if error should be retryable.
+     * Handle service unavailable errors.
      */
-    public function isRetryableError(string $errorType): bool
+    public function handleServiceUnavailable(string $service = 'service', string $message = null): JsonResponse
     {
-        $retryableErrors = [
-            'provider_unavailable',
-            'timeout_error',
-            'rate_limit_exceeded',
-            'provider_api_error',
-            'streaming_error',
-        ];
-
-        return in_array($errorType, $retryableErrors);
+        $message = $message ?? "The {$service} is temporarily unavailable.";
+        
+        return response()->json([
+            'success' => false,
+            'error' => 'service_unavailable',
+            'error_code' => 'SERVICE_UNAVAILABLE',
+            'message' => $message,
+            'user_message' => 'This service is temporarily down for maintenance. Please try again later.',
+            'data' => [
+                'service' => $service,
+                'actions' => [
+                    'retry_later' => 'Try again in a few minutes',
+                    'check_status' => '/api/status',
+                    'contact_support' => 'Contact support if the problem persists',
+                ],
+            ],
+        ], 503);
     }
 
     /**
-     * Get error severity level.
+     * Handle resource not found errors.
      */
-    public function getErrorSeverity(string $errorType): string
+    public function handleResourceNotFound(string $resource = 'resource', int $resourceId = null): JsonResponse
     {
-        $severityMap = [
-            'authentication_error' => 'low',
-            'authorization_error' => 'low',
-            'validation_error' => 'low',
-            'insufficient_credits' => 'medium',
-            'rate_limit_exceeded' => 'medium',
-            'provider_unavailable' => 'medium',
-            'timeout_error' => 'medium',
-            'company_not_found' => 'medium',
-            'streaming_error' => 'high',
-            'credit_transaction_error' => 'high',
-            'provider_api_error' => 'high',
-            'general_error' => 'critical',
-        ];
+        return response()->json([
+            'success' => false,
+            'error' => 'resource_not_found',
+            'error_code' => 'RESOURCE_NOT_FOUND',
+            'message' => "The requested {$resource} was not found.",
+            'user_message' => "The {$resource} you're looking for doesn't exist or you don't have permission to access it.",
+            'data' => [
+                'resource_type' => $resource,
+                'resource_id' => $resourceId,
+                'actions' => [
+                    'go_back' => 'Go back to the previous page',
+                    'check_permissions' => 'Verify you have the correct permissions',
+                    'contact_admin' => 'Contact your administrator',
+                ],
+            ],
+        ], 404);
+    }
 
-        return $severityMap[$errorType] ?? 'medium';
+    /**
+     * Handle quota exceeded errors.
+     */
+    public function handleQuotaExceeded(string $quotaType, int $limit, int $current): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'error' => 'quota_exceeded',
+            'error_code' => 'QUOTA_EXCEEDED',
+            'message' => "You have exceeded your {$quotaType} quota.",
+            'user_message' => "You've reached your limit of {$limit} {$quotaType}. Please upgrade your plan or delete some items.",
+            'data' => [
+                'quota_type' => $quotaType,
+                'limit' => $limit,
+                'current' => $current,
+                'actions' => [
+                    'upgrade_plan' => '/dashboard/billing/plans',
+                    'delete_items' => "Delete some {$quotaType} to free up space",
+                    'contact_sales' => 'Contact sales for custom limits',
+                ],
+            ],
+        ], 422);
+    }
+
+    /**
+     * Handle maintenance mode errors.
+     */
+    public function handleMaintenanceMode(): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'error' => 'maintenance_mode',
+            'error_code' => 'MAINTENANCE_MODE',
+            'message' => 'The application is currently under maintenance.',
+            'user_message' => 'We\'re performing scheduled maintenance. Please check back in a few minutes.',
+            'data' => [
+                'actions' => [
+                    'retry_later' => 'Try again in a few minutes',
+                    'check_status' => '/api/status',
+                    'follow_updates' => 'Follow our status page for updates',
+                ],
+            ],
+        ], 503);
+    }
+
+    /**
+     * Handle AI provider unavailable errors.
+     */
+    public function handleProviderUnavailable(string $provider = 'AI provider', string $message = null): JsonResponse
+    {
+        $message = $message ?? "The {$provider} is currently unavailable.";
+        
+        return response()->json([
+            'success' => false,
+            'error' => 'provider_unavailable',
+            'error_code' => 'PROVIDER_UNAVAILABLE',
+            'message' => $message,
+            'user_message' => 'The AI service is temporarily unavailable. Please try again later.',
+            'data' => [
+                'provider' => $provider,
+                'actions' => [
+                    'retry_later' => 'Try again in a few minutes',
+                    'try_different_model' => 'Try using a different AI model',
+                    'contact_support' => 'Contact support if the problem persists',
+                ],
+            ],
+        ], 503);
     }
 }

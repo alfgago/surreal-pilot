@@ -18,6 +18,7 @@ class ChatConversationFactory extends Factory
     {
         return [
             'workspace_id' => \App\Models\Workspace::factory(),
+            'user_id' => \App\Models\User::factory(),
             'title' => $this->faker->sentence(3),
             'description' => $this->faker->optional()->paragraph(),
         ];

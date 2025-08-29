@@ -1,18 +1,30 @@
 <?php
 
 return [
-    // Orchestrator can be 'prism' (legacy) or 'vizra' (site-wide Vizra ADK)
-    'orchestrator' => env('AI_ORCHESTRATOR', 'vizra'),
+    // Always use Vizra ADK with Anthropic Claude
+    'orchestrator' => 'vizra',
+    'provider' => 'anthropic',
+    'model' => env('AI_MODEL', 'claude-3-5-sonnet-20241022'),
 
-    // Default model choices per engine (used to prime Vizra agents)
-    'models' => [
-        'playcanvas' => env('AI_MODEL_PLAYCANVAS', 'claude-sonnet-4-20250514'),
-        'unreal' => env('AI_MODEL_UNREAL', 'claude-sonnet-4-20250514'),
+    // Engine-specific Vizra agents
+    'agents' => [
+        'playcanvas' => [
+            'class' => \App\Agents\PlayCanvasAgent::class,
+            'model' => env('AI_MODEL_PLAYCANVAS', 'claude-3-5-sonnet-20241022'),
+            'temperature' => 0.2,
+            'max_tokens' => 1200,
+        ],
+        'unreal' => [
+            'class' => \App\Agents\UnrealAgent::class,
+            'model' => env('AI_MODEL_UNREAL', 'claude-3-5-sonnet-20241022'),
+            'temperature' => 0.2,
+            'max_tokens' => 1200,
+        ],
     ],
 
     // Retrieval settings (agent layer)
     'retrieval' => [
-        'enabled' => env('AI_RETRIEVAL_ENABLED', false),
+        'enabled' => env('AI_RETRIEVAL_ENABLED', true),
         'max_snippets' => env('AI_RETRIEVAL_MAX_SNIPPETS', 6),
     ],
 ];

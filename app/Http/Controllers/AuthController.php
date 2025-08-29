@@ -8,12 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class AuthController extends Controller
 {
-    public function showRegister()
+    public function showRegister(): Response
     {
-        return view('auth.register');
+        return Inertia::render('Auth/Register');
     }
 
     public function register(Request $request)
@@ -46,12 +48,14 @@ class AuthController extends Controller
         $user->forceFill(['current_company_id' => $company->id])->save();
 
         Auth::login($user);
-        return redirect('/chat');
+        
+        // New users need to select an engine first
+        return redirect('/engine-selection');
     }
 
-    public function showLogin()
+    public function showLogin(): Response
     {
-        return view('auth.login');
+        return Inertia::render('Auth/Login');
     }
 
     public function login(Request $request)
@@ -63,6 +67,20 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
+            
+            $user = Auth::user();
+            
+            // If user hasn't selected an engine, redirect to engine selection
+            if (!$user->hasSelectedEngine()) {
+                return redirect()->intended('/engine-selection');
+            }
+            
+            // If user has selected engine but no workspace in session, redirect to workspace selection
+            if (!session('selected_workspace_id')) {
+                return redirect()->intended('/workspace-selection');
+            }
+            
+            // Otherwise go to chat
             return redirect()->intended('/chat');
         }
 

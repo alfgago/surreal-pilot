@@ -18,6 +18,7 @@ class ChatConversation extends Model
      */
     protected $fillable = [
         'workspace_id',
+        'user_id',
         'title',
         'description',
     ];
@@ -28,6 +29,14 @@ class ChatConversation extends Model
     public function workspace(): BelongsTo
     {
         return $this->belongsTo(Workspace::class);
+    }
+
+    /**
+     * Get the user that owns the conversation.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

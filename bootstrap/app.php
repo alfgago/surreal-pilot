@@ -12,16 +12,22 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            // Load desktop routes when running in NativePHP (but not during testing)
+            // Load desktop routes ONLY when running in NativePHP desktop app
+            // Check for NATIVE_PHP environment variable or specific desktop context
             if (class_exists(\Native\Laravel\Facades\Window::class) &&
                 !app()->runningInConsole() &&
-                !app()->environment('testing')) {
+                !app()->environment(['testing', 'dusk.local']) &&
+                (env('NATIVE_PHP', false) || isset($_SERVER['NATIVE_PHP']))) {
                 Route::middleware('web')
                     ->group(base_path('routes/desktop.php'));
             }
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
+
         $middleware->alias([
             'resolve.ai.driver' => \App\Http\Middleware\ResolveAiDriver::class,
             'check.developer.role' => \App\Http\Middleware\CheckDeveloperRole::class,
@@ -29,6 +35,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'verify.engine.hmac' => \App\Http\Middleware\VerifyEngineHmac::class,
             'plan.capability' => \App\Http\Middleware\CheckPlanCapability::class,
             'auth.sanctum_or_web' => \App\Http\Middleware\AuthSanctumOrWeb::class,
+            'api.error.handling' => \App\Http\Middleware\ApiErrorHandling::class,
+            'validate.engine.compatibility' => \App\Http\Middleware\ValidateEngineCompatibility::class,
+            'validate.workspace.access' => \App\Http\Middleware\ValidateWorkspaceAccess::class,
+        ]);
+
+        // Add API error handling middleware to all API routes
+        $middleware->group('api', [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            'throttle:api',
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            'api.error.handling',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

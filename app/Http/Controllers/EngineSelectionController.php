@@ -24,7 +24,11 @@ class EngineSelectionController extends Controller
             return redirect()->route('workspace.selection');
         }
 
-        return view('engine-selection');
+        $engines = $this->engineSelectionService->getAvailableEngines();
+        
+        return \Inertia\Inertia::render('EngineSelection', [
+            'engines' => $engines,
+        ]);
     }
 
     /**

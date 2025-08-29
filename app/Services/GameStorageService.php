@@ -7,22 +7,63 @@ use App\Models\Workspace;
 use App\Models\ChatConversation;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class GameStorageService
 {
     /**
-     * Create a new game.
+     * Create a new game with details.
+     */
+    public function createGameWithDetails(
+        Workspace $workspace,
+        string $title,
+        string $description = '',
+        string $engine = 'playcanvas',
+        ?string $templateId = null
+    ): Game {
+        $game = Game::create([
+            'workspace_id' => $workspace->id,
+            'title' => $title,
+            'description' => $description,
+            'engine_type' => $engine,
+            'template_id' => $templateId,
+            'status' => 'draft',
+        ]);
+
+        // Create game directory
+        $this->createGameDirectory($game);
+
+        Log::info('Game created successfully', [
+            'game_id' => $game->id,
+            'workspace_id' => $workspace->id,
+            'title' => $title,
+            'engine' => $engine,
+        ]);
+
+        return $game;
+    }
+
+    /**
+     * Create a game from a chat conversation.
      */
     public function createGame(
         Workspace $workspace, 
         string $title, 
         ?ChatConversation $conversation = null
     ): Game {
-        return Game::create([
+        $game = Game::create([
             'workspace_id' => $workspace->id,
             'conversation_id' => $conversation?->id,
             'title' => $title,
+            'status' => 'draft',
+            'engine_type' => $workspace->engine_type ?? 'playcanvas',
         ]);
+
+        // Create game directory
+        $this->createGameDirectory($game);
+
+        return $game;
     }
 
     /**
@@ -36,111 +77,24 @@ class GameStorageService
     }
 
     /**
-     * Update game metadata.
+     * Get paginated games for a workspace.
      */
-    public function updateGameMetadata(Game $game, array $metadata): Game
+    public function getPaginatedWorkspaceGames(Workspace $workspace, int $perPage = 15): array
     {
-        $currentMetadata = $game->metadata ?? [];
-        $updatedMetadata = array_merge($currentMetadata, $metadata);
-        
-        $game->update(['metadata' => $updatedMetadata]);
-        return $game->fresh();
-    }
-
-    /**
-     * Set game URLs.
-     */
-    public function setGameUrls(Game $game, ?string $previewUrl = null, ?string $publishedUrl = null): Game
-    {
-        $updateData = [];
-        
-        if ($previewUrl !== null) {
-            $updateData['preview_url'] = $previewUrl;
-        }
-        
-        if ($publishedUrl !== null) {
-            $updateData['published_url'] = $publishedUrl;
-        }
-        
-        if (!empty($updateData)) {
-            $game->update($updateData);
-        }
-        
-        return $game->fresh();
-    }
-
-    /**
-     * Generate thumbnail for a game.
-     */
-    public function generateThumbnail(Game $game): ?string
-    {
-        // This would integrate with a thumbnail generation service
-        // For now, we'll create a placeholder thumbnail URL
-        
-        if ($game->hasPreview()) {
-            // Generate thumbnail from preview URL
-            $thumbnailUrl = $this->createThumbnailFromPreview($game->preview_url);
-            
-            if ($thumbnailUrl) {
-                $game->update(['thumbnail_url' => $thumbnailUrl]);
-                return $thumbnailUrl;
-            }
-        }
-        
-        // Return existing thumbnail or null
-        return $game->thumbnail_url;
-    }
-
-    /**
-     * Delete a game and its associated files.
-     */
-    public function deleteGame(Game $game): bool
-    {
-        // Clean up associated files
-        $this->cleanupGameFiles($game);
-        
-        return $game->delete();
-    }
-
-    /**
-     * Get games by engine type.
-     */
-    public function getGamesByEngine(int $companyId, string $engineType): Collection
-    {
-        return Game::whereHas('workspace', function ($query) use ($companyId, $engineType) {
-            $query->where('company_id', $companyId)
-                  ->where('engine_type', $engineType);
-        })
-        ->orderBy('updated_at', 'desc')
-        ->get();
-    }
-
-    /**
-     * Get recent games across all workspaces for a company.
-     */
-    public function getRecentGames(int $companyId, int $limit = 10): Collection
-    {
-        return Game::whereHas('workspace', function ($query) use ($companyId) {
-            $query->where('company_id', $companyId);
-        })
-        ->orderBy('updated_at', 'desc')
-        ->limit($limit)
-        ->with(['workspace', 'conversation'])
-        ->get();
-    }
-
-    /**
-     * Search games by title or description.
-     */
-    public function searchGames(Workspace $workspace, string $query): Collection
-    {
-        return $workspace->games()
-            ->where(function ($q) use ($query) {
-                $q->where('title', 'like', "%{$query}%")
-                  ->orWhere('description', 'like', "%{$query}%");
-            })
+        $games = $workspace->games()
             ->orderBy('updated_at', 'desc')
-            ->get();
+            ->paginate($perPage);
+
+        return [
+            'games' => collect($games->items()),
+            'pagination' => [
+                'current_page' => $games->currentPage(),
+                'per_page' => $games->perPage(),
+                'total' => $games->total(),
+                'last_page' => $games->lastPage(),
+                'has_more_pages' => $games->hasMorePages(),
+            ]
+        ];
     }
 
     /**
@@ -149,57 +103,237 @@ class GameStorageService
     public function getGameStats(Game $game): array
     {
         return [
-            'created_at' => $game->created_at,
-            'updated_at' => $game->updated_at,
-            'engine_type' => $game->getEngineType(),
-            'has_preview' => $game->hasPreview(),
-            'has_thumbnail' => $game->hasThumbnail(),
-            'is_published' => $game->isPublished(),
-            'conversation_id' => $game->conversation_id,
+            'file_count' => 0, // Placeholder
+            'total_size' => 0, // Placeholder
+            'last_modified' => $game->updated_at,
+            'build_count' => 0, // Placeholder
         ];
     }
 
     /**
-     * Create thumbnail from preview URL.
+     * Update game metadata.
      */
-    private function createThumbnailFromPreview(string $previewUrl): ?string
+    public function updateGameMetadata(Game $game, array $data): Game
     {
-        // This would integrate with a screenshot/thumbnail service
-        // For now, return a placeholder or the preview URL itself
-        return $previewUrl . '/thumbnail';
+        $game->update($data);
+        return $game->fresh();
     }
 
     /**
-     * Clean up game files.
+     * Get paginated recent games for a company.
      */
-    private function cleanupGameFiles(Game $game): void
+    public function getPaginatedRecentGames($companyId, int $page = 1, int $limit = 15, ?string $search = null): array
     {
-        // Clean up thumbnails, builds, and other associated files
-        if ($game->thumbnail_url) {
-            // Delete thumbnail file if it's stored locally
-            $thumbnailPath = parse_url($game->thumbnail_url, PHP_URL_PATH);
-            if ($thumbnailPath && Storage::exists($thumbnailPath)) {
-                Storage::delete($thumbnailPath);
+        $query = Game::whereHas('workspace', function ($q) use ($companyId) {
+            $q->where('company_id', $companyId);
+        });
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        $games = $query->orderBy('updated_at', 'desc')
+                      ->paginate($limit, ['*'], 'page', $page);
+
+        return [
+            'games' => collect($games->items()),
+            'pagination' => [
+                'current_page' => $games->currentPage(),
+                'per_page' => $games->perPage(),
+                'total' => $games->total(),
+                'last_page' => $games->lastPage(),
+                'has_more_pages' => $games->hasMorePages(),
+            ]
+        ];
+    }
+
+    /**
+     * Get available templates for an engine type.
+     */
+    public function getAvailableTemplates(string $engineType): array
+    {
+        // Return basic templates based on engine type
+        return match($engineType) {
+            'playcanvas' => [
+                ['id' => 'blank', 'name' => 'Blank Project', 'description' => 'Start from scratch'],
+                ['id' => 'platformer', 'name' => '2D Platformer', 'description' => 'Basic platformer template'],
+                ['id' => 'fps', 'name' => 'First Person', 'description' => 'FPS template with controls'],
+            ],
+            'unreal' => [
+                ['id' => 'blank', 'name' => 'Blank Project', 'description' => 'Empty Unreal project'],
+                ['id' => 'third_person', 'name' => 'Third Person', 'description' => 'Third person template'],
+                ['id' => 'first_person', 'name' => 'First Person', 'description' => 'First person template'],
+            ],
+            default => []
+        };
+    }
+
+    /**
+     * Get game files for a game.
+     */
+    public function getGameFiles(Game $game): array
+    {
+        $gameDir = $this->getGameDirectory($game);
+        
+        if (!Storage::exists($gameDir)) {
+            return [];
+        }
+
+        $files = Storage::allFiles($gameDir);
+        
+        return collect($files)->map(function ($file) use ($gameDir) {
+            $relativePath = str_replace($gameDir . '/', '', $file);
+            return [
+                'name' => basename($file),
+                'path' => $relativePath,
+                'size' => Storage::size($file),
+                'modified' => Storage::lastModified($file),
+                'url' => Storage::url($file),
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Store game content (HTML, assets, etc.).
+     */
+    public function storeGameContent(Game $game, string $content, string $filename = 'index.html'): string
+    {
+        $gameDir = $this->getGameDirectory($game);
+        $filePath = $gameDir . '/' . $filename;
+        
+        Storage::put($filePath, $content);
+        
+        // Update game preview URL
+        $previewUrl = Storage::url($filePath);
+        $game->update(['preview_url' => $previewUrl]);
+        
+        Log::info('Game content stored', [
+            'game_id' => $game->id,
+            'filename' => $filename,
+            'size' => strlen($content),
+        ]);
+        
+        return $previewUrl;
+    }
+
+    /**
+     * Delete a game and its associated files.
+     */
+    public function deleteGame(Game $game): bool
+    {
+        try {
+            // Delete game files
+            $gameDir = $this->getGameDirectory($game);
+            if (Storage::exists($gameDir)) {
+                Storage::deleteDirectory($gameDir);
             }
+
+            // Delete the game record
+            $game->delete();
+
+            Log::info('Game deleted successfully', [
+                'game_id' => $game->id,
+                'workspace_id' => $game->workspace_id,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to delete game', [
+                'game_id' => $game->id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Publish a game (make it publicly accessible).
+     */
+    public function publishGame(Game $game): bool
+    {
+        try {
+            // Generate share token if not exists
+            if (!$game->share_token) {
+                $game->update(['share_token' => Str::random(32)]);
+            }
+
+            // Update published URL
+            $publishedUrl = url("/games/shared/{$game->share_token}");
+            $game->update([
+                'published_url' => $publishedUrl,
+                'is_public' => true,
+                'published_at' => now(),
+                'status' => 'published',
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Failed to publish game', [
+                'game_id' => $game->id,
+                'error' => $e->getMessage(),
+            ]);
+            return false;
+        }
+    }
+
+    /**
+     * Create game directory structure.
+     */
+    private function createGameDirectory(Game $game): void
+    {
+        $gameDir = $this->getGameDirectory($game);
+        
+        if (!Storage::exists($gameDir)) {
+            Storage::makeDirectory($gameDir);
+            Storage::makeDirectory($gameDir . '/assets');
+            Storage::makeDirectory($gameDir . '/builds');
+        }
+    }
+
+    /**
+     * Get game file size in bytes.
+     */
+    public function getGameFileSize(Game $game): int
+    {
+        $gameDir = $this->getGameDirectory($game);
+        
+        if (!Storage::exists($gameDir)) {
+            return 0;
+        }
+
+        $files = Storage::allFiles($gameDir);
+        $totalSize = 0;
+        
+        foreach ($files as $file) {
+            $totalSize += Storage::size($file);
         }
         
-        // Additional cleanup for game builds, assets, etc.
-        // This would depend on how game files are stored
+        return $totalSize;
     }
 
     /**
-     * Duplicate a game.
+     * Get game asset count.
      */
-    public function duplicateGame(Game $originalGame, ?string $newTitle = null): Game
+    public function getGameAssetCount(Game $game): int
     {
-        $newGame = Game::create([
-            'workspace_id' => $originalGame->workspace_id,
-            'conversation_id' => null, // New game doesn't belong to original conversation
-            'title' => $newTitle ?? ($originalGame->title . ' (Copy)'),
-            'description' => $originalGame->description,
-            'metadata' => $originalGame->metadata,
-        ]);
+        $gameDir = $this->getGameDirectory($game);
+        
+        if (!Storage::exists($gameDir)) {
+            return 0;
+        }
 
-        return $newGame;
+        $files = Storage::allFiles($gameDir);
+        return count($files);
+    }
+
+    /**
+     * Get the storage directory path for a game.
+     */
+    private function getGameDirectory(Game $game): string
+    {
+        return "workspaces/{$game->workspace_id}/games/{$game->id}";
     }
 }

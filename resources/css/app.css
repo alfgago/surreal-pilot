@@ -1,14 +1,150 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+@custom-variant dark (&:is(.dark *));
 
-/* Component styles */
-@import './components/recent-chats.css';
+:root {
+  /* Updated color scheme to cool mint with dark background theme */
+  /* Primary Theme Colors - Edit these to change the entire theme */
+  --theme-primary-hue: 165; /* Mint green hue - change to any value 0-360 */
+  --theme-primary-saturation: 0.15; /* Primary color intensity */
+  --theme-primary-lightness: 0.65; /* Primary color brightness */
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --theme-background-hue: 200; /* Background hue */
+  --theme-background-saturation: 0.02; /* Background color intensity */
+  --theme-background-lightness: 0.18; /* Background darkness/lightness */
+
+  /* Typography Variables - Edit these to change fonts easily */
+  --font-heading: "Montserrat", sans-serif; /* Headings font */
+  --font-body: "Open Sans", sans-serif; /* Body text font */
+
+  /* Computed colors based on theme variables */
+  --background: oklch(var(--theme-background-lightness) var(--theme-background-saturation) var(--theme-background-hue));
+  --foreground: oklch(0.95 0.01 180);
+  --card: oklch(
+    calc(var(--theme-background-lightness) + 0.04) var(--theme-background-saturation) var(--theme-background-hue)
+  );
+  --card-foreground: oklch(0.95 0.01 180);
+  --popover: oklch(
+    calc(var(--theme-background-lightness) + 0.04) var(--theme-background-saturation) var(--theme-background-hue)
+  );
+  --popover-foreground: oklch(0.95 0.01 180);
+  --primary: oklch(var(--theme-primary-lightness) var(--theme-primary-saturation) var(--theme-primary-hue));
+  --primary-foreground: oklch(
+    var(--theme-background-lightness) var(--theme-background-saturation) var(--theme-background-hue)
+  );
+  --secondary: oklch(
+    calc(var(--theme-background-lightness) + 0.1) calc(var(--theme-background-saturation) + 0.01)
+      var(--theme-background-hue)
+  );
+  --secondary-foreground: oklch(0.95 0.01 180);
+  --muted: oklch(
+    calc(var(--theme-background-lightness) + 0.1) calc(var(--theme-background-saturation) + 0.01)
+      var(--theme-background-hue)
+  );
+  --muted-foreground: oklch(0.65 0.05 180);
+  --accent: oklch(
+    calc(var(--theme-primary-lightness) - 0.1) calc(var(--theme-primary-saturation) - 0.03) var(--theme-primary-hue)
+  );
+  --accent-foreground: oklch(0.95 0.01 180);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.95 0.01 180);
+  --border: oklch(
+    calc(var(--theme-background-lightness) + 0.14) calc(var(--theme-background-saturation) + 0.01)
+      var(--theme-background-hue)
+  );
+  --input: oklch(
+    calc(var(--theme-background-lightness) + 0.04) var(--theme-background-saturation) var(--theme-background-hue)
+  );
+  --ring: oklch(var(--theme-primary-lightness) var(--theme-primary-saturation) var(--theme-primary-hue)); /* Mint focus ring */
+  --chart-1: oklch(var(--theme-primary-lightness) var(--theme-primary-saturation) var(--theme-primary-hue));
+  --chart-2: oklch(
+    calc(var(--theme-primary-lightness) - 0.1) calc(var(--theme-primary-saturation) - 0.03) var(--theme-primary-hue)
+  );
+  --chart-3: oklch(
+    calc(var(--theme-primary-lightness) - 0.2) calc(var(--theme-primary-saturation) - 0.05) var(--theme-primary-hue)
+  );
+  --chart-4: oklch(
+    calc(var(--theme-primary-lightness) + 0.1) calc(var(--theme-primary-saturation) + 0.03) var(--theme-primary-hue)
+  );
+  --chart-5: oklch(
+    calc(var(--theme-primary-lightness) - 0.3) calc(var(--theme-primary-saturation) - 0.07) var(--theme-primary-hue)
+  );
+  --radius: 0.625rem;
+  --sidebar: oklch(
+    calc(var(--theme-background-lightness) + 0.02) var(--theme-background-saturation) var(--theme-background-hue)
+  );
+  --sidebar-foreground: oklch(0.95 0.01 180);
+  --sidebar-primary: oklch(var(--theme-primary-lightness) var(--theme-primary-saturation) var(--theme-primary-hue));
+  --sidebar-primary-foreground: oklch(
+    var(--theme-background-lightness) var(--theme-background-saturation) var(--theme-background-hue)
+  );
+  --sidebar-accent: oklch(
+    calc(var(--theme-background-lightness) + 0.1) calc(var(--theme-background-saturation) + 0.01)
+      var(--theme-background-hue)
+  );
+  --sidebar-accent-foreground: oklch(0.95 0.01 180);
+  --sidebar-border: oklch(
+    calc(var(--theme-background-lightness) + 0.14) calc(var(--theme-background-saturation) + 0.01)
+      var(--theme-background-hue)
+  );
+  --sidebar-ring: oklch(var(--theme-primary-lightness) var(--theme-primary-saturation) var(--theme-primary-hue));
+  --font-open-sans: "Open Sans", sans-serif;
+  --font-montserrat: "Montserrat", serif;
+}
+
+.dark {
+  /* Dark mode uses the same mint theme since we want dark background by default */
+  /* All colors automatically computed from theme variables above */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  /* Added font family mappings for Montserrat and Open Sans */
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
 }

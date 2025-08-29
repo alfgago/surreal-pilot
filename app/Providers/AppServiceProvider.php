@@ -2,11 +2,8 @@
 
 namespace App\Providers;
 
-use Filament\Forms\Components\FileUpload;
-use Filament\Infolists\Components\ImageEntry;
-use Filament\Tables\Columns\ImageColumn;
-use Filament\Tables\Table;
 use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,6 +25,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Services\PlayCanvasMcpManager::class, function ($app) {
             return new \App\Services\PlayCanvasMcpManager();
         });
+
+        $this->app->singleton(\App\Services\OnDemandMcpManager::class, function ($app) {
+            return new \App\Services\OnDemandMcpManager(
+                $app->make(\App\Services\PlayCanvasMcpManager::class)
+            );
+        });
+
+        // Core services temporarily disabled due to autoload issues
+        // Will be re-enabled once the autoload issue is resolved
     }
 
     /**
@@ -49,14 +55,38 @@ class AppServiceProvider extends ServiceProvider
             return \Illuminate\Cache\RateLimiting\Limit::perMinute($max)->by('company:'.$company?->id ?: 'guest');
         });
 
-        // Preserve Filament v3-like defaults application-wide (see v4 upgrade guide)
-        Table::configureUsing(fn (Table $table) => $table
-            ->defaultKeySort(false)
-            ->deferFilters(false)
-            ->paginationPageOptions([5, 10, 25, 50, 'all']));
+        // API rate limiting (general)
+        \Illuminate\Support\Facades\RateLimiter::for('api', function (\Illuminate\Http\Request $request) {
+            $user = $request->user();
+            $company = $user?->currentCompany;
+            $plan = $company?->plan ?? 'starter';
+            $limits = [
+                'starter' => [60, 1],    // 60 per minute
+                'pro' => [180, 1],       // 180 per minute
+                'enterprise' => [600, 1] // 600 per minute
+            ];
+            [$max, $per] = $limits[$plan] ?? $limits['starter'];
+            return \Illuminate\Cache\RateLimiting\Limit::perMinute($max)->by('api:company:'.$company?->id ?: 'guest');
+        });
 
-        FileUpload::configureUsing(fn (FileUpload $fileUpload) => $fileUpload->visibility('public'));
-        ImageColumn::configureUsing(fn (ImageColumn $imageColumn) => $imageColumn->visibility('public'));
-        ImageEntry::configureUsing(fn (ImageEntry $imageEntry) => $imageEntry->visibility('public'));
+        // Configure Inertia
+        Inertia::share([
+            'auth' => function () {
+                return [
+                    'user' => auth()->user() ? [
+                        'id' => auth()->user()->id,
+                        'name' => auth()->user()->name,
+                        'email' => auth()->user()->email,
+                        'current_company_id' => auth()->user()->current_company_id,
+                    ] : null,
+                ];
+            },
+            'flash' => function () {
+                return [
+                    'success' => session('success'),
+                    'error' => session('error'),
+                ];
+            },
+        ]);
     }
 }
