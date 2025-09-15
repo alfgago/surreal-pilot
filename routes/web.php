@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\EngineSelectionController;
 use App\Http\Controllers\WorkspaceSelectionController;
+use App\Http\Controllers\WorkspacesController;
 use Illuminate\Support\Facades\Route;
 
 // Add logout route
@@ -37,16 +38,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/workspace-selection/create', [WorkspaceSelectionController::class, 'create'])->name('workspace.create');
     Route::get('/workspace-selection/templates', [WorkspaceSelectionController::class, 'getTemplates'])->name('workspace.templates');
     
-    // Workspace routes (redirect to workspace selection for now)
-    Route::get('/workspaces', function () {
-        return redirect()->route('workspace.selection');
-    })->name('workspaces.index');
-    Route::get('/workspaces/create', function () {
-        return redirect()->route('workspace.selection');
-    })->name('workspaces.create');
-    Route::get('/workspaces/{workspace}', function ($workspace) {
-        return redirect()->route('workspace.selection');
-    })->name('workspaces.show');
+    // Workspace routes
+    Route::get('/workspaces', [\App\Http\Controllers\WorkspacesController::class, 'index'])->name('workspaces.index');
+    Route::get('/workspaces/create', [\App\Http\Controllers\WorkspacesController::class, 'create'])->name('workspaces.create');
+    Route::get('/workspaces/templates', [\App\Http\Controllers\WorkspacesController::class, 'getTemplates'])->name('workspaces.templates');
+    Route::post('/workspaces', [\App\Http\Controllers\WorkspacesController::class, 'store'])->name('workspaces.store');
+    Route::post('/workspaces/select', [\App\Http\Controllers\WorkspacesController::class, 'select'])->name('workspaces.select');
+    Route::get('/workspaces/{workspace}', [\App\Http\Controllers\WorkspacesController::class, 'show'])->name('workspaces.show');
     
     Route::get('/chat', [ChatController::class, 'index'])->name('chat');
     
@@ -118,16 +116,9 @@ Route::middleware('auth')->group(function () {
 // Home routes - redirect based on user state
 Route::get('/', function () {
     if (auth()->check()) {
-        $user = auth()->user();
-        
-        // If user hasn't selected an engine, redirect to engine selection
-        if (!$user->hasSelectedEngine()) {
-            return redirect()->route('engine.selection');
-        }
-        
-        // If user has selected engine but no workspace in session, redirect to workspace selection
+        // If no workspace in session, redirect to workspaces
         if (!session('selected_workspace_id')) {
-            return redirect()->route('workspace.selection');
+            return redirect()->route('workspaces.index');
         }
         
         // Otherwise go to chat
@@ -239,5 +230,7 @@ Route::get('/support', function () {
 })->name('support');
 
 // Public game sharing routes (no authentication required)
-Route::get('/games/shared/{shareToken}', [\App\Http\Controllers\PublicGameController::class, 'showSharedGame'])->name('games.shared');
-Route::get('/games/embed/{shareToken}', [\App\Http\Controllers\PublicGameController::class, 'embedGame'])->name('games.embed');
+Route::get('/games/shared/{shareToken}', [\App\Http\Controllers\SharedGameController::class, 'show'])->name('games.shared');
+Route::get('/games/embed/{shareToken}', [\App\Http\Controllers\SharedGameController::class, 'embed'])->name('games.embed');
+Route::get('/games/shared/{shareToken}/metadata', [\App\Http\Controllers\SharedGameController::class, 'metadata'])->name('games.shared.metadata');
+Route::get('/games/shared/{shareToken}/assets/{assetPath}', [\App\Http\Controllers\SharedGameController::class, 'assets'])->name('games.shared.assets')->where('assetPath', '.*');

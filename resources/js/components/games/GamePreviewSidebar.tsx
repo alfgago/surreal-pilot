@@ -21,6 +21,8 @@ import {
   Smartphone
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import GameSharingModal from './GameSharingModal';
+import { useGameSharing } from '@/hooks/useGameSharing';
 
 // Enhanced Game interface based on the model
 interface GameData {
@@ -87,6 +89,16 @@ export function GamePreviewSidebar({
   });
   const [refreshCount, setRefreshCount] = useState(0);
   const [isMobileView, setIsMobileView] = useState(false);
+  const [showSharingModal, setShowSharingModal] = useState(false);
+  
+  // Game sharing functionality
+  const { 
+    shareGame, 
+    updateSharingSettings, 
+    revokeShareLink,
+    loading: sharingLoading,
+    error: sharingError 
+  } = useGameSharing();
   
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const refreshTimeoutRef = useRef<NodeJS.Timeout>();
@@ -192,6 +204,31 @@ export function GamePreviewSidebar({
     
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Handle sharing modal
+  const handleShareClick = useCallback(() => {
+    setShowSharingModal(true);
+  }, []);
+
+  const handleSharingModalClose = useCallback(() => {
+    setShowSharingModal(false);
+  }, []);
+
+  // Sharing handlers
+  const handleGameShare = useCallback(async (options: any) => {
+    if (!gameData) return { success: false, message: 'No game data available' };
+    return await shareGame(gameData.id, options);
+  }, [gameData, shareGame]);
+
+  const handleUpdateSharingSettings = useCallback(async (settings: any) => {
+    if (!gameData) return false;
+    return await updateSharingSettings(gameData.id, settings);
+  }, [gameData, updateSharingSettings]);
+
+  const handleRevokeShareLink = useCallback(async () => {
+    if (!gameData) return false;
+    return await revokeShareLink(gameData.id);
+  }, [gameData, revokeShareLink]);
 
   // Don't render if not visible or no game data
   if (!isVisible || !gameData) {
@@ -359,10 +396,15 @@ export function GamePreviewSidebar({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={onShare}
+                  onClick={handleShareClick}
                   className="h-8"
+                  disabled={sharingLoading}
                 >
-                  <Share className="w-3 h-3 mr-1" />
+                  {sharingLoading ? (
+                    <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  ) : (
+                    <Share className="w-3 h-3 mr-1" />
+                  )}
                   Share
                 </Button>
                 <Button
@@ -461,6 +503,16 @@ export function GamePreviewSidebar({
           </div>
         </CardContent>
       </Card>
+
+      {/* Game Sharing Modal */}
+      <GameSharingModal
+        game={gameData}
+        isOpen={showSharingModal}
+        onClose={handleSharingModalClose}
+        onShare={handleGameShare}
+        onUpdateSettings={handleUpdateSharingSettings}
+        onRevokeLink={handleRevokeShareLink}
+      />
     </div>
   );
 }

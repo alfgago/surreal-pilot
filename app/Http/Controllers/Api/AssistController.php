@@ -627,6 +627,14 @@ class AssistController extends Controller
             }
         }
 
+        // Check for GDevelop-specific context indicators
+        $gdevelopIndicators = ['gdevelop', 'game_json', 'session_id'];
+        foreach ($gdevelopIndicators as $indicator) {
+            if (!empty($context[$indicator])) {
+                return 'gdevelop';
+            }
+        }
+
         // Check for PlayCanvas-specific context indicators
         $playCanvasIndicators = ['scene', 'entities', 'components', 'playcanvas'];
         foreach ($playCanvasIndicators as $indicator) {

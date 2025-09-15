@@ -49,7 +49,7 @@ class EngineController extends Controller
                 'workspace_id' => $workspace->id,
                 'engine_type' => $workspace->engine_type,
                 'status' => 'disconnected',
-                'message' => 'Engine not connected',
+                'message' => $workspace->engine_type === 'playcanvas' ? 'Workspace not ready' : 'Engine not connected',
                 'details' => []
             ];
 
@@ -59,20 +59,18 @@ class EngineController extends Controller
                 switch ($mcpStatus) {
                     case 'running':
                         $status['status'] = 'connected';
-                        $status['message'] = 'PlayCanvas MCP server is running';
+                        $status['message'] = 'Ready for game development';
                         $status['details'] = [
-                            'mcp_port' => $workspace->mcp_port,
-                            'mcp_pid' => $workspace->mcp_pid,
                             'preview_url' => $workspace->preview_url,
                         ];
                         break;
                     case 'unhealthy':
                         $status['status'] = 'error';
-                        $status['message'] = 'PlayCanvas MCP server is unhealthy';
+                        $status['message'] = 'Unable to initialize workspace';
                         break;
                     default:
                         $status['status'] = 'disconnected';
-                        $status['message'] = 'PlayCanvas MCP server is not running';
+                        $status['message'] = 'Workspace not ready';
                 }
             } elseif ($workspace->isUnreal()) {
                 // For Unreal Engine, we would check the plugin connection
@@ -233,21 +231,19 @@ class EngineController extends Controller
 
             $status = [
                 'mcp_running' => $mcpStatus === 'running',
-                'port' => $workspace->mcp_port,
                 'preview_available' => !empty($workspace->preview_url),
                 'preview_url' => $workspace->preview_url,
                 'last_update' => $workspace->updated_at?->toISOString(),
-                'health_check' => $healthCheck,
             ];
 
             if ($mcpStatus !== 'running') {
-                $status['error'] = 'MCP server is not running';
+                $status['error'] = 'Workspace not ready';
             }
 
             return response()->json($status);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
-                'error' => 'PlayCanvas workspace not found',
+                'error' => 'Workspace not found',
             ], 404);
         } catch (\Exception $e) {
             Log::error('Failed to get PlayCanvas status', [
@@ -258,7 +254,7 @@ class EngineController extends Controller
             return response()->json([
                 'mcp_running' => false,
                 'preview_available' => false,
-                'error' => 'Failed to get PlayCanvas status: ' . $e->getMessage(),
+                'error' => 'Unable to check workspace status',
             ], 500);
         }
     }
@@ -282,7 +278,7 @@ class EngineController extends Controller
             if ($mcpStatus !== 'running') {
                 return response()->json([
                     'success' => false,
-                    'error' => 'MCP server is not running',
+                    'error' => 'Workspace not ready',
                 ], 400);
             }
 
@@ -348,14 +344,13 @@ class EngineController extends Controller
 
             return response()->json([
                 'success' => true,
-                'port' => $result['port'],
                 'preview_url' => $result['preview_url'],
-                'message' => 'MCP server started successfully',
+                'message' => 'Workspace ready for game development',
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
                 'success' => false,
-                'error' => 'PlayCanvas workspace not found',
+                'error' => 'Workspace not found',
             ], 404);
         } catch (\Exception $e) {
             Log::error('Failed to start PlayCanvas MCP server', [
@@ -365,7 +360,7 @@ class EngineController extends Controller
 
             return response()->json([
                 'success' => false,
-                'error' => 'Failed to start MCP server: ' . $e->getMessage(),
+                'error' => 'Unable to initialize workspace',
             ], 500);
         }
     }

@@ -21,7 +21,7 @@ export interface Company {
 export interface Workspace {
     id: number;
     name: string;
-    engine: 'unreal' | 'playcanvas';
+    engine_type: 'unreal' | 'playcanvas';
     company_id: number;
     user_id: number;
     created_at: string;

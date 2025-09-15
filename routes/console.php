@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Schedule workspace cleanup to run daily at 2 AM
 Schedule::command('workspace:cleanup')->dailyAt('02:00');
+
+// Schedule GDevelop preview cleanup to run every hour
+Schedule::command('gdevelop:cleanup-previews --force')->hourly();

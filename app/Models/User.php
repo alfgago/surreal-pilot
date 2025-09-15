@@ -206,4 +206,12 @@ class User extends Authenticatable // implements FilamentUser, HasAvatar, HasDef
     {
         return (bool) $this->getPreference('ai.save_history', true);
     }
+
+    /**
+     * Get the GDevelop game sessions for this user.
+     */
+    public function gdevelopGameSessions(): HasMany
+    {
+        return $this->hasMany(GDevelopGameSession::class);
+    }
 }

@@ -1,0 +1,12 @@
+{
+  "name": "Test Game for Refresh",
+  "short_name": "Test Game for Refresh",
+  "id": "",
+  "description": "",
+  "orientation": "any",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "black",
+  "categories": ["games", "entertainment"],
+  "icons": []
+}

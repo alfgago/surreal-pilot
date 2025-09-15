@@ -1,68 +1,64 @@
 {
-  "mcpServers": {
-    "ref-tools": {
-      "command": "npx",
-      "args": [
-        "ref-tools-mcp@latest"
-      ],
-      "env": {
-        "REF_API_KEY": "ref-a0efadf19ae43c51c776",
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "disabled": false,
-      "autoApprove": [
-        "search",
-        "get",
-        "list",
-        "search_docs",
-        "get_doc",
-        "list_libraries",
-        "ref_search_documentation",
-        "ref_read_url"
-      ]
-    },
-    "laravel-boost": {
-      "command": "php",
-      "args": [
-        "artisan",
-        "boost:mcp"
-      ],
-      "env": {
-        "FASTMCP_LOG_LEVEL": "ERROR"
-      },
-      "disabled": false,
-      "autoApprove": [
-        "application_info",
-        "browser_logs",
-        "database_connections",
-        "database_query",
-        "database_schema",
-        "get_absolute_url",
-        "get_config",
-        "last_error",
-        "list_artisan_commands",
-        "list_available_config_keys",
-        "list_available_env_vars",
-        "list_routes",
-        "read_log_entries",
-        "report_feedback",
-        "search_docs",
-        "tinker",
-        "application-info",
-        "search-docs",
-        "list-routes",
-        "get-config",
-        "get-config",
-        "database-schema",
-        "database-query",
-        "database-query",
-        "list-available-env-vars",
-        "read-log-entries",
-        "list-available-config-keys",
-        "get-absolute-url",
-        "last-error",
-        "browser-logs"
-      ]
+    "mcpServers": {
+        "ref-tools": {
+            "command": "npx",
+            "args": ["ref-tools-mcp@latest"],
+            "env": {
+                "REF_API_KEY": "ref-a0efadf19ae43c51c776",
+                "FASTMCP_LOG_LEVEL": "ERROR"
+            },
+            "disabled": false,
+            "autoApprove": [
+                "search",
+                "get",
+                "list",
+                "search_docs",
+                "get_doc",
+                "list_libraries",
+                "ref_search_documentation",
+                "ref_read_url"
+            ]
+        },
+        "laravel-boost": {
+            "command": "php",
+            "args": ["artisan", "boost:mcp"],
+            "cwd": "C:\\laragon\\www\\surreal-pilot",
+            "env": {
+                "FASTMCP_LOG_LEVEL": "ERROR"
+            },
+            "disabled": false,
+            "autoApprove": [
+                "application_info",
+                "browser_logs",
+                "database_connections",
+                "database_query",
+                "database_schema",
+                "get_absolute_url",
+                "get_config",
+                "last_error",
+                "list_artisan_commands",
+                "list_available_config_keys",
+                "list_available_env_vars",
+                "list_routes",
+                "read_log_entries",
+                "report_feedback",
+                "search_docs",
+                "tinker",
+                "application-info",
+                "search-docs",
+                "list-routes",
+                "get-config",
+                "get-config",
+                "database-schema",
+                "database-query",
+                "database-query",
+                "list-available-env-vars",
+                "read-log-entries",
+                "list-available-config-keys",
+                "get-absolute-url",
+                "last-error",
+                "browser-logs"
+            ]
+        }
     }
-  }
 }

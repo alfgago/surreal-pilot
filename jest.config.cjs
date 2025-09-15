@@ -1,7 +1,7 @@
 module.exports = {
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/vendor/pc_mcp/tests', '<rootDir>/tests/js'],
-  testMatch: ['**/__tests__/**/*.js', '**/?(*.)+(spec|test).js'],
+  testMatch: ['**/__tests__/**/*.{js,ts,tsx}', '**/?(*.)+(spec|test).{js,ts,tsx}'],
   collectCoverageFrom: [
     'vendor/pc_mcp/src/**/*.js',
     'resources/js/**/*.js',
@@ -16,7 +16,7 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/vendor/pc_mcp/src/$1',
   },
   transform: {
-    '^.+\\.js$': 'babel-jest',
+    '^.+\\.(js|ts|tsx)$': 'babel-jest',
   },
   testTimeout: 10000,
   verbose: true,

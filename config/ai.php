@@ -20,6 +20,12 @@ return [
             'temperature' => 0.2,
             'max_tokens' => 1200,
         ],
+        'gdevelop' => [
+            'class' => \App\Agents\GDevelopAgent::class,
+            'model' => env('AI_MODEL_GDEVELOP', 'claude-3-5-sonnet-20241022'),
+            'temperature' => 0.2,
+            'max_tokens' => 1200,
+        ],
     ],
 
     // Retrieval settings (agent layer)

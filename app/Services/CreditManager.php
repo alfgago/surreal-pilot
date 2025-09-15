@@ -201,7 +201,7 @@ class CreditManager
     }
 
     /**
-     * Calculate MCP surcharge for PlayCanvas operations.
+     * Calculate MCP surcharge for engine-specific operations.
      *
      * @param string $engineType
      * @param int $actionCount
@@ -209,11 +209,11 @@ class CreditManager
      */
     public function calculateMcpSurcharge(string $engineType, int $actionCount = 1): float
     {
-        if ($engineType === 'playcanvas') {
-            return 0.1 * $actionCount;
-        }
-        
-        return 0.0;
+        return match($engineType) {
+            'playcanvas' => 0.1 * $actionCount,
+            'gdevelop' => 0.05 * $actionCount, // Lower surcharge for GDevelop
+            default => 0.0
+        };
     }
 
     /**
@@ -277,6 +277,11 @@ class CreditManager
                     'transactions' => 0,
                     'mcp_surcharge' => 0,
                 ],
+                'gdevelop' => [
+                    'usage' => 0,
+                    'transactions' => 0,
+                    'mcp_surcharge' => 0,
+                ],
                 'other' => [
                     'usage' => 0,
                     'transactions' => 0,
@@ -298,6 +303,7 @@ class CreditManager
                     'total' => 0,
                     'unreal' => 0,
                     'playcanvas' => 0,
+                    'gdevelop' => 0,
                     'other' => 0,
                     'mcp_surcharges' => 0,
                 ];

@@ -29,7 +29,8 @@ class ChatConversationService
 
             $conversation = ChatConversation::create([
                 'workspace_id' => $workspace->id,
-                'title' => $title,
+                'user_id' => auth()->id(),
+                'title' => $title ?? 'New Chat',
             ]);
 
             DB::commit();

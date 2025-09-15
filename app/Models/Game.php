@@ -39,6 +39,12 @@ class Game extends Model
         'build_log',
         'last_build_at',
         'deployment_config',
+        'custom_domain',
+        'domain_status',
+        'domain_config',
+        'thinking_history',
+        'game_mechanics',
+        'interaction_count',
     ];
 
     /**
@@ -53,6 +59,9 @@ class Game extends Model
             'tags' => 'array',
             'sharing_settings' => 'array',
             'deployment_config' => 'array',
+            'domain_config' => 'array',
+            'thinking_history' => 'array',
+            'game_mechanics' => 'array',
             'last_played_at' => 'datetime',
             'published_at' => 'datetime',
             'last_build_at' => 'datetime',
@@ -288,5 +297,90 @@ class Game extends Model
     {
         $this->increment('play_count');
         $this->update(['last_played_at' => now()]);
+    }
+
+    /**
+     * Check if the game has a custom domain configured.
+     */
+    public function hasCustomDomain(): bool
+    {
+        return !empty($this->custom_domain);
+    }
+
+    /**
+     * Check if the custom domain is active and verified.
+     */
+    public function isDomainActive(): bool
+    {
+        return $this->domain_status === 'active';
+    }
+
+    /**
+     * Check if the custom domain is pending verification.
+     */
+    public function isDomainPending(): bool
+    {
+        return $this->domain_status === 'pending';
+    }
+
+    /**
+     * Check if the custom domain setup failed.
+     */
+    public function isDomainFailed(): bool
+    {
+        return $this->domain_status === 'failed';
+    }
+
+    /**
+     * Get the custom domain URL for the game.
+     */
+    public function getCustomDomainUrl(): ?string
+    {
+        if (!$this->hasCustomDomain()) {
+            return null;
+        }
+
+        $protocol = ($this->domain_config['ssl_enabled'] ?? false) ? 'https' : 'http';
+        return "{$protocol}://{$this->custom_domain}";
+    }
+
+    /**
+     * Get the primary access URL (custom domain, published, or preview).
+     */
+    public function getPrimaryUrl(): ?string
+    {
+        if ($this->hasCustomDomain() && $this->isDomainActive()) {
+            return $this->getCustomDomainUrl();
+        }
+
+        return $this->getDisplayUrl();
+    }
+
+    /**
+     * Update domain configuration.
+     */
+    public function updateDomainConfig(array $config): void
+    {
+        $currentConfig = $this->domain_config ?? [];
+        $updatedConfig = array_merge($currentConfig, $config);
+        
+        $this->update(['domain_config' => $updatedConfig]);
+    }
+
+    /**
+     * Set domain status with optional message.
+     */
+    public function setDomainStatus(string $status, ?string $message = null): void
+    {
+        $updates = ['domain_status' => $status];
+        
+        if ($message) {
+            $config = $this->domain_config ?? [];
+            $config['status_message'] = $message;
+            $config['last_check'] = now()->toISOString();
+            $updates['domain_config'] = $config;
+        }
+        
+        $this->update($updates);
     }
 }

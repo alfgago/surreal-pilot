@@ -161,8 +161,8 @@ class Workspace extends Model
         
         static::saving(function ($workspace) {
             // Validate engine type
-            if (!in_array($workspace->engine_type, ['playcanvas', 'unreal'])) {
-                throw new \InvalidArgumentException("Invalid engine type: {$workspace->engine_type}. Must be 'playcanvas' or 'unreal'.");
+            if (!in_array($workspace->engine_type, ['playcanvas', 'unreal', 'gdevelop'])) {
+                throw new \InvalidArgumentException("Invalid engine type: {$workspace->engine_type}. Must be 'playcanvas', 'unreal', or 'gdevelop'.");
             }
             
             // Validate PlayCanvas-specific requirements (skip in testing)
@@ -250,5 +250,21 @@ class Workspace extends Model
     public function getRecentGames()
     {
         return $this->games()->orderBy('updated_at', 'desc')->get();
+    }
+
+    /**
+     * Get the GDevelop game sessions for this workspace.
+     */
+    public function gdevelopGameSessions(): HasMany
+    {
+        return $this->hasMany(GDevelopGameSession::class);
+    }
+
+    /**
+     * Check if this workspace uses GDevelop engine.
+     */
+    public function isGDevelop(): bool
+    {
+        return $this->engine_type === 'gdevelop';
     }
 }

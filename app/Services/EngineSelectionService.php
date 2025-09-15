@@ -37,6 +37,24 @@ class EngineSelectionService
                         'Internet connection for publishing'
                     ]
                 ],
+                'gdevelop' => [
+                    'type' => 'gdevelop',
+                    'name' => 'GDevelop',
+                    'description' => 'No-code game development with AI-powered chat interface',
+                    'icon' => '/images/engines/gdevelop-icon.svg',
+                    'features' => [
+                        'No-code game creation',
+                        'AI-powered chat interface',
+                        'HTML5 game export',
+                        'Mobile-friendly games',
+                        'Real-time preview'
+                    ],
+                    'available' => $this->isEngineAvailable('gdevelop'),
+                    'requirements' => [
+                        'Modern web browser',
+                        'No additional software needed'
+                    ]
+                ],
                 'unreal' => [
                     'type' => 'unreal',
                     'name' => 'Unreal Engine',
@@ -70,6 +88,12 @@ class EngineSelectionService
                     'type' => 'playcanvas',
                     'name' => 'PlayCanvas',
                     'description' => 'Web and mobile game development',
+                    'available' => true,
+                ],
+                'gdevelop' => [
+                    'type' => 'gdevelop',
+                    'name' => 'GDevelop',
+                    'description' => 'No-code game development',
                     'available' => true,
                 ],
                 'unreal' => [
@@ -218,7 +242,7 @@ class EngineSelectionService
             ]);
 
             // Fallback validation
-            return in_array($engineType, ['playcanvas', 'unreal']);
+            return in_array($engineType, ['playcanvas', 'gdevelop', 'unreal']);
         }
     }
 
@@ -239,6 +263,7 @@ class EngineSelectionService
             // Fallback display names
             return match($engineType) {
                 'playcanvas' => 'PlayCanvas',
+                'gdevelop' => 'GDevelop',
                 'unreal' => 'Unreal Engine',
                 default => ucfirst($engineType)
             };
@@ -270,6 +295,7 @@ class EngineSelectionService
                 'type' => $engineType,
                 'name' => match($engineType) {
                     'playcanvas' => 'PlayCanvas',
+                    'gdevelop' => 'GDevelop',
                     'unreal' => 'Unreal Engine',
                     default => ucfirst($engineType)
                 },
@@ -303,6 +329,11 @@ class EngineSelectionService
                 return true;
             }
 
+            // All plans can access GDevelop
+            if ($engineType === 'gdevelop') {
+                return true;
+            }
+
             // Unreal Engine might require higher plans in the future
             if ($engineType === 'unreal') {
                 // For now, all plans can access Unreal Engine
@@ -333,6 +364,10 @@ class EngineSelectionService
                 case 'playcanvas':
                     // Check if PlayCanvas MCP server is available
                     return $this->checkPlayCanvasAvailability();
+                
+                case 'gdevelop':
+                    // Check if GDevelop is enabled and available
+                    return $this->checkGDevelopAvailability();
                 
                 case 'unreal':
                     // Check if Unreal MCP server is available
@@ -381,11 +416,35 @@ class EngineSelectionService
     private function checkPlayCanvasAvailability(): bool
     {
         try {
+            // Check if PlayCanvas is enabled in configuration
+            if (!config('gdevelop.engines.playcanvas_enabled', true)) {
+                return false;
+            }
+
             // Check if PlayCanvas MCP manager is available
             $mcpManager = app(\App\Services\PlayCanvasMcpManager::class);
             return $mcpManager->isAvailable();
         } catch (\Throwable $e) {
-            return true; // Default to available
+            // If PlayCanvas is enabled but MCP manager fails, still show as available
+            return config('gdevelop.engines.playcanvas_enabled', true);
+        }
+    }
+
+    /**
+     * Check GDevelop availability.
+     */
+    private function checkGDevelopAvailability(): bool
+    {
+        try {
+            // Check if GDevelop is enabled in configuration
+            if (!config('gdevelop.engines.gdevelop_enabled', false)) {
+                return false;
+            }
+
+            // Additional check for GDevelop CLI availability if needed
+            return config('gdevelop.enabled', false);
+        } catch (\Throwable $e) {
+            return false; // Default to unavailable for GDevelop
         }
     }
 

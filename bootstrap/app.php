@@ -38,6 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'api.error.handling' => \App\Http\Middleware\ApiErrorHandling::class,
             'validate.engine.compatibility' => \App\Http\Middleware\ValidateEngineCompatibility::class,
             'validate.workspace.access' => \App\Http\Middleware\ValidateWorkspaceAccess::class,
+            'gdevelop.enabled' => \App\Http\Middleware\EnsureGDevelopEnabled::class,
         ]);
 
         // Add API error handling middleware to all API routes

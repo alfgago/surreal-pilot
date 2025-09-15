@@ -40,18 +40,18 @@ export function WorkspaceSwitcher({
         );
     }
 
-    const CurrentEngineIcon = getEngineIcon(currentWorkspace.engine);
+    const CurrentEngineIcon = getEngineIcon(currentWorkspace.engine_type);
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-auto p-2 justify-start space-x-2 max-w-64">
                     <div className="flex items-center space-x-2 min-w-0">
-                        <CurrentEngineIcon className={`w-4 h-4 ${getEngineColor(currentWorkspace.engine)} flex-shrink-0`} />
+                        <CurrentEngineIcon className={`w-4 h-4 ${getEngineColor(currentWorkspace.engine_type)} flex-shrink-0`} />
                         <div className="min-w-0 text-left">
                             <div className="font-medium text-sm truncate">{currentWorkspace.name}</div>
                             <div className="text-xs text-muted-foreground">
-                                {currentWorkspace.engine === 'playcanvas' ? 'PlayCanvas' : 'Unreal Engine'}
+                                {currentWorkspace.engine_type === 'playcanvas' ? 'PlayCanvas' : 'Unreal Engine'}
                             </div>
                         </div>
                     </div>
@@ -62,7 +62,7 @@ export function WorkspaceSwitcher({
                 <DropdownMenuLabel>Switch Workspace</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {workspaces.map((workspace) => {
-                    const EngineIcon = getEngineIcon(workspace.engine);
+                    const EngineIcon = getEngineIcon(workspace.engine_type);
                     const isActive = workspace.id === currentWorkspace.id;
                     return (
                         <DropdownMenuItem 
@@ -70,13 +70,13 @@ export function WorkspaceSwitcher({
                             className={`cursor-pointer ${isActive ? 'bg-accent' : ''}`} 
                             asChild
                         >
-                            <Link href={`/chat?workspace=${workspace.id}`}>
+                            <Link href={`/workspaces/${workspace.id}`}>
                                 <div className="flex items-center space-x-2 w-full">
-                                    <EngineIcon className={`w-4 h-4 ${getEngineColor(workspace.engine)}`} />
+                                    <EngineIcon className={`w-4 h-4 ${getEngineColor(workspace.engine_type)}`} />
                                     <div className="flex-1 min-w-0">
                                         <div className="font-medium text-sm truncate">{workspace.name}</div>
                                         <Badge variant="secondary" className="text-xs">
-                                            {workspace.engine === 'playcanvas' ? 'PlayCanvas' : 'Unreal'}
+                                            {workspace.engine_type === 'playcanvas' ? 'PlayCanvas' : 'Unreal'}
                                         </Badge>
                                     </div>
                                 </div>

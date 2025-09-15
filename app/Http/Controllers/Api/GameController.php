@@ -7,13 +7,17 @@ use App\Models\Game;
 use App\Models\Workspace;
 use App\Models\ChatConversation;
 use App\Services\GameStorageService;
+use App\Services\GameSharingService;
+use App\Services\DomainPublishingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
     public function __construct(
-        private GameStorageService $gameStorageService
+        private GameStorageService $gameStorageService,
+        private GameSharingService $gameSharingService,
+        private DomainPublishingService $domainPublishingService
     ) {}
 
     /**
@@ -507,6 +511,334 @@ class GameController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to retrieve recent games',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Create a shareable link for a game.
+     */
+    public function shareGame(Request $request, int $gameId): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $company = $user->currentCompany;
+
+            $game = Game::whereHas('workspace', function ($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })->findOrFail($gameId);
+
+            $validated = $request->validate([
+                'allowEmbedding' => 'sometimes|boolean',
+                'showControls' => 'sometimes|boolean',
+                'showInfo' => 'sometimes|boolean',
+                'expirationDays' => 'sometimes|integer|min:1|max:365',
+            ]);
+
+            $result = $this->gameSharingService->createShareableLink($game, $validated);
+
+            if (!$result['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message'],
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Shareable link created successfully',
+                'sharing' => $result,
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Game not found',
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create shareable link',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update sharing settings for a game.
+     */
+    public function updateSharingSettings(Request $request, int $gameId): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $company = $user->currentCompany;
+
+            $game = Game::whereHas('workspace', function ($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })->findOrFail($gameId);
+
+            $validated = $request->validate([
+                'allowEmbedding' => 'sometimes|boolean',
+                'showControls' => 'sometimes|boolean',
+                'showInfo' => 'sometimes|boolean',
+                'expirationDays' => 'sometimes|integer|min:1|max:365',
+            ]);
+
+            $success = $this->gameSharingService->updateSharingSettings($game, $validated);
+
+            if (!$success) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to update sharing settings',
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Sharing settings updated successfully',
+                'settings' => $game->fresh()->sharing_settings,
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Game not found',
+            ], 404);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update sharing settings',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Revoke a game's share link.
+     */
+    public function revokeShareLink(Request $request, int $gameId): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $company = $user->currentCompany;
+
+            $game = Game::whereHas('workspace', function ($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })->findOrFail($gameId);
+
+            $success = $this->gameSharingService->revokeShareLink($game);
+
+            if (!$success) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to revoke share link',
+                ], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Share link revoked successfully',
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Game not found',
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to revoke share link',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get sharing statistics for a game.
+     */
+    public function getSharingStats(Request $request, int $gameId): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $company = $user->currentCompany;
+
+            $game = Game::whereHas('workspace', function ($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })->findOrFail($gameId);
+
+            $stats = $this->gameSharingService->getSharingStats($game);
+
+            return response()->json([
+                'success' => true,
+                'stats' => $stats,
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Game not found',
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get sharing stats',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Setup custom domain for a game.
+     */
+    public function setupCustomDomain(Request $request, Game $game): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $company = $user->currentCompany;
+
+            // Verify game belongs to user's company
+            if ($game->workspace->company_id !== $company->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Game not found',
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'domain' => 'required|string|max:255',
+            ]);
+
+            $result = $this->domainPublishingService->setupCustomDomain($game, $validated['domain']);
+
+            if ($result['success']) {
+                return response()->json($result);
+            } else {
+                return response()->json($result, 400);
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to setup custom domain',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Verify domain configuration and DNS propagation.
+     */
+    public function verifyDomain(Request $request, Game $game): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $company = $user->currentCompany;
+
+            // Verify game belongs to user's company
+            if ($game->workspace->company_id !== $company->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Game not found',
+                ], 404);
+            }
+
+            $result = $this->domainPublishingService->verifyDomain($game);
+
+            return response()->json($result);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to verify domain',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Remove custom domain configuration.
+     */
+    public function removeDomain(Request $request, Game $game): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $company = $user->currentCompany;
+
+            // Verify game belongs to user's company
+            if ($game->workspace->company_id !== $company->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Game not found',
+                ], 404);
+            }
+
+            $result = $this->domainPublishingService->removeDomain($game);
+
+            if ($result['success']) {
+                return response()->json($result);
+            } else {
+                return response()->json($result, 400);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to remove domain',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get domain status and configuration.
+     */
+    public function getDomainStatus(Request $request, Game $game): JsonResponse
+    {
+        try {
+            $user = $request->user();
+            $company = $user->currentCompany;
+
+            // Verify game belongs to user's company
+            if ($game->workspace->company_id !== $company->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Game not found',
+                ], 404);
+            }
+
+            $domainData = [
+                'has_custom_domain' => $game->hasCustomDomain(),
+                'custom_domain' => $game->custom_domain,
+                'domain_status' => $game->domain_status,
+                'domain_config' => $game->domain_config,
+                'is_domain_active' => $game->isDomainActive(),
+                'is_domain_pending' => $game->isDomainPending(),
+                'is_domain_failed' => $game->isDomainFailed(),
+                'custom_domain_url' => $game->getCustomDomainUrl(),
+                'primary_url' => $game->getPrimaryUrl(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'domain' => $domainData,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get domain status',
                 'error' => $e->getMessage(),
             ], 500);
         }

@@ -32,11 +32,10 @@ abstract class DuskTestCase extends BaseTestCase
     {
         parent::setUp();
         
-        // Ensure we're using the correct database for browser tests
-        config(['database.default' => 'sqlite']);
-        config(['database.connections.sqlite.database' => database_path('testing.sqlite')]);
+        // Use the main MySQL database for browser tests
+        config(['database.default' => 'mysql']);
         
-        // Database is already seeded by the test script
+        // Database is already seeded and available
         // No need to seed again here
     }
 

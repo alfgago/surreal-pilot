@@ -17,7 +17,7 @@ import {
 interface Workspace {
     id: number;
     name: string;
-    engine_type: 'playcanvas' | 'unreal';
+    engine_type: 'playcanvas' | 'unreal' | 'gdevelop';
     status: string;
     preview_url?: string;
     published_url?: string;
@@ -47,11 +47,25 @@ export default function EngineContext({
     onOpenPreview 
 }: EngineContextProps) {
     const getEngineIcon = () => {
-        return workspace.engine_type === 'playcanvas' ? <Monitor className="w-5 h-5" /> : <Gamepad2 className="w-5 h-5" />;
+        switch (workspace.engine_type) {
+            case 'playcanvas':
+                return <Monitor className="w-5 h-5" />;
+            case 'gdevelop':
+                return <Gamepad2 className="w-5 h-5" />;
+            default:
+                return <Gamepad2 className="w-5 h-5" />;
+        }
     };
 
     const getEngineDisplayName = () => {
-        return workspace.engine_type === 'playcanvas' ? 'PlayCanvas' : 'Unreal Engine';
+        switch (workspace.engine_type) {
+            case 'playcanvas':
+                return 'PlayCanvas';
+            case 'gdevelop':
+                return 'GDevelop';
+            default:
+                return 'Unreal Engine';
+        }
     };
 
     const getStatusIcon = () => {
@@ -78,6 +92,27 @@ export default function EngineContext({
             default:
                 return 'bg-gray-100 text-gray-800 border-gray-200';
         }
+    };
+
+    const getUserFriendlyMessage = () => {
+        if (!engineStatus.message) return null;
+        
+        // For PlayCanvas and GDevelop workspaces, hide technical details
+        if (workspace.engine_type === 'playcanvas' || workspace.engine_type === 'gdevelop') {
+            switch (engineStatus.status) {
+                case 'connected':
+                    return 'Ready for game development';
+                case 'connecting':
+                    return 'Initializing workspace...';
+                case 'error':
+                    return 'Unable to initialize workspace. Please try refreshing.';
+                default:
+                    return 'Workspace not ready';
+            }
+        }
+        
+        // For Unreal Engine, show the original message
+        return engineStatus.message;
     };
 
     return (
@@ -108,27 +143,28 @@ export default function EngineContext({
                     <Badge variant="outline" className={getStatusColor()}>
                         <div className="flex items-center space-x-1">
                             {getStatusIcon()}
-                            <span className="capitalize">{engineStatus.status}</span>
+                            <span className="capitalize">
+                                {(workspace.engine_type === 'playcanvas' || workspace.engine_type === 'gdevelop')
+                                    ? (engineStatus.status === 'connected' ? 'Ready' : 
+                                       engineStatus.status === 'connecting' ? 'Loading' : 
+                                       engineStatus.status === 'error' ? 'Error' : 'Offline')
+                                    : engineStatus.status
+                                }
+                            </span>
                         </div>
                     </Badge>
                 </div>
 
                 {/* Status Message */}
-                {engineStatus.message && (
+                {getUserFriendlyMessage() && (
                     <div className="text-xs text-muted-foreground bg-muted p-2 rounded">
-                        {engineStatus.message}
+                        {getUserFriendlyMessage()}
                     </div>
                 )}
 
                 {/* Engine-specific Details */}
                 {workspace.engine_type === 'playcanvas' && (
                     <div className="space-y-2">
-                        {workspace.mcp_port && (
-                            <div className="flex justify-between text-xs">
-                                <span className="text-muted-foreground">MCP Port:</span>
-                                <span className="font-mono">{workspace.mcp_port}</span>
-                            </div>
-                        )}
                         {workspace.preview_url && (
                             <Button
                                 variant="outline"
@@ -157,32 +193,65 @@ export default function EngineContext({
                     </div>
                 )}
 
-                {/* Connection Actions */}
-                <div className="flex space-x-2">
-                    {engineStatus.status === 'disconnected' && (
+                {workspace.engine_type === 'gdevelop' && (
+                    <div className="space-y-2">
+                        {workspace.preview_url && (
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full"
+                                onClick={onOpenPreview}
+                            >
+                                <ExternalLink className="w-3 h-3 mr-2" />
+                                Open Preview
+                            </Button>
+                        )}
+                    </div>
+                )}
+
+                {/* Connection Actions - Only show for Unreal Engine */}
+                {workspace.engine_type === 'unreal' && (
+                    <div className="flex space-x-2">
+                        {engineStatus.status === 'disconnected' && (
+                            <Button
+                                variant="default"
+                                size="sm"
+                                className="flex-1"
+                                onClick={onOpenConnection}
+                            >
+                                <Wifi className="w-3 h-3 mr-2" />
+                                Connect
+                            </Button>
+                        )}
+                        
+                        {engineStatus.status === 'error' && (
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                className="flex-1"
+                                onClick={onRefreshStatus}
+                            >
+                                <RefreshCw className="w-3 h-3 mr-2" />
+                                Retry
+                            </Button>
+                        )}
+                    </div>
+                )}
+
+                {/* For PlayCanvas and GDevelop, only show refresh if there's an error */}
+                {(workspace.engine_type === 'playcanvas' || workspace.engine_type === 'gdevelop') && engineStatus.status === 'error' && (
+                    <div className="flex space-x-2">
                         <Button
-                            variant="default"
-                            size="sm"
-                            className="flex-1"
-                            onClick={onOpenConnection}
-                        >
-                            <Wifi className="w-3 h-3 mr-2" />
-                            Connect
-                        </Button>
-                    )}
-                    
-                    {engineStatus.status === 'error' && (
-                        <Button
-                            variant="destructive"
+                            variant="outline"
                             size="sm"
                             className="flex-1"
                             onClick={onRefreshStatus}
                         >
                             <RefreshCw className="w-3 h-3 mr-2" />
-                            Retry
+                            Refresh
                         </Button>
-                    )}
-                </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

@@ -12,6 +12,7 @@ use App\Models\Workspace;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use App\Support\AI\AgentRouter;
 
 class StreamingChatController extends Controller
 {
@@ -22,23 +23,33 @@ class StreamingChatController extends Controller
     ) {}
 
     /**
-     * Stream chat responses using Server-Sent Events
+     * Stream chat responses using Server-Sent Events (GET method for EventSource)
      */
-    public function stream(ChatMessageRequest $request): StreamedResponse|\Illuminate\Http\JsonResponse
+    public function streamSSE(Request $request): StreamedResponse|\Illuminate\Http\JsonResponse
     {
         $user = $request->user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
         $company = $user->currentCompany;
-        
-        $validated = $request->validated();
-        $conversationId = $validated['conversation_id'];
-        $message = $validated['message'];
-        $workspaceId = $validated['workspace_id'];
+
+        $conversationId = $request->query('conversation_id');
+        $message = $request->query('message');
+        $workspaceId = $request->query('workspace_id');
+
+        if (!$conversationId || !$message || !$workspaceId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Missing required parameters: conversation_id, message, workspace_id',
+            ], 400);
+        }
 
         // Verify conversation access
         $conversation = ChatConversation::whereHas('workspace', function ($query) use ($company) {
             $query->where('company_id', $company->id);
         })->where('id', $conversationId)->first();
-        
+
         if (!$conversation) {
             return response()->json([
                 'success' => false,
@@ -77,43 +88,16 @@ class StreamingChatController extends Controller
                     'timestamp' => now()->toISOString(),
                 ]);
 
-                // Simulate AI response streaming (replace with actual AI integration)
-                $fullResponse = $this->generateStreamingResponse($message, $workspace);
-                $chunks = $this->chunkResponse($fullResponse);
-                
-                $assistantMessageId = null;
-                $completeResponse = '';
-                $totalTokens = 0;
+                // Generate a simple fallback response for SSE endpoint
+                $fullResponse = "I'm sorry, but the SSE endpoint is deprecated. Please use the POST /api/chat/stream endpoint with the useStream hook for proper streaming functionality.";
 
-                foreach ($chunks as $index => $chunk) {
-                    $completeResponse .= $chunk['content'];
-                    $totalTokens += $chunk['tokens'];
-
-                    // Send chunk
-                    $this->sendSSEEvent('chunk', [
-                        'content' => $chunk['content'],
-                        'tokens' => $chunk['tokens'],
-                        'chunk_index' => $index,
-                        'timestamp' => now()->toISOString(),
-                    ]);
-
-                    // Deduct credits for this chunk
-                    if ($chunk['tokens'] > 0) {
-                        $this->creditManager->deductCredits(
-                            $company,
-                            $chunk['tokens'],
-                            'AI Chat - Streaming Chunk',
-                            [
-                                'conversation_id' => $conversation->id,
-                                'chunk_index' => $index,
-                                'user_id' => $user->id,
-                            ]
-                        );
-                    }
-
-                    // Small delay to simulate real streaming
-                    usleep(50000); // 50ms
-                }
+                // Send the complete response as one chunk
+                $this->sendSSEEvent('chunk', [
+                    'content' => $fullResponse,
+                    'tokens' => 10,
+                    'chunk_index' => 0,
+                    'timestamp' => now()->toISOString(),
+                ]);
 
                 // Stop typing indicator
                 $this->sendSSEEvent('typing_stop', [
@@ -125,10 +109,10 @@ class StreamingChatController extends Controller
                 $assistantMessage = $this->conversationService->addMessage(
                     $conversation,
                     'assistant',
-                    $completeResponse,
+                    $fullResponse,
                     [
-                        'tokens_used' => $totalTokens,
-                        'streaming' => true,
+                        'tokens_used' => 10,
+                        'streaming' => false,
                         'engine_type' => $workspace->engine_type,
                     ]
                 );
@@ -136,7 +120,7 @@ class StreamingChatController extends Controller
                 // Send completion event
                 $this->sendSSEEvent('completed', [
                     'message_id' => $assistantMessage->id,
-                    'total_tokens' => $totalTokens,
+                    'total_tokens' => 10,
                     'credits_remaining' => $company->fresh()->credits,
                     'conversation_id' => $conversation->id,
                     'timestamp' => $assistantMessage->created_at->toISOString(),
@@ -145,7 +129,7 @@ class StreamingChatController extends Controller
                 Log::info('Streaming chat completed', [
                     'conversation_id' => $conversation->id,
                     'user_id' => $user->id,
-                    'total_tokens' => $totalTokens,
+                    'total_tokens' => 10,
                 ]);
 
             } catch (\Throwable $e) {
@@ -182,6 +166,165 @@ class StreamingChatController extends Controller
     }
 
     /**
+     * Stream chat responses using Laravel Stream (POST method compatible with useStream hook)
+     */
+    public function stream(Request $request): StreamedResponse
+    {
+        $user = $request->user();
+        $company = $user->currentCompany;
+
+        // Get the message data from request
+        $messages = $request->input('messages', []);
+        $conversationId = $request->input('conversation_id');
+        $workspaceId = $request->input('workspace_id');
+
+        if (empty($messages)) {
+            return response()->stream(function () {
+                echo 'No message provided';
+            }, 400);
+        }
+
+        // Get the latest user message
+        $lastMessage = end($messages);
+        $messageContent = $lastMessage['content'] ?? '';
+
+        if (!$conversationId || !$workspaceId) {
+            return response()->stream(function () {
+                echo 'Missing conversation_id or workspace_id';
+            }, 400);
+        }
+
+        // Verify conversation access
+        $conversation = ChatConversation::whereHas('workspace', function ($query) use ($company) {
+            $query->where('company_id', $company->id);
+        })->where('id', $conversationId)->first();
+
+        if (!$conversation) {
+            return response()->stream(function () {
+                echo 'Conversation not found or access denied';
+            }, 404);
+        }
+
+        $workspace = $conversation->workspace;
+
+        return response()->stream(function () use ($conversation, $workspace, $messageContent, $messages, $user, $company) {
+            try {
+                // Add user message to conversation
+                $userMessage = $this->conversationService->addMessage(
+                    $conversation,
+                    'user',
+                    $messageContent
+                );
+
+                // Use real AI agents for streaming
+                $engineType = strtolower($workspace->engine_type ?? 'playcanvas');
+                $agentClass = AgentRouter::forEngine($engineType);
+
+                // Prepare context for the agent
+                $context = [
+                    'conversation_id' => $conversation->id,
+                    'workspace_id' => $workspace->id,
+                    'engine_type' => $engineType,
+                ];
+
+                // Build the prompt with context
+                $prompt = $this->buildPromptWithContext($messages, $context, $engineType);
+
+                // Set default model/provider for the engine
+                $model = $engineType === 'playcanvas' ?
+                    config('ai.models.playcanvas', 'claude-sonnet-4-20250514') :
+                    config('ai.models.unreal', 'claude-sonnet-4-20250514');
+
+                config([
+                    'vizra-adk.default_provider' => 'anthropic',
+                    'vizra-adk.default_model' => $model,
+                ]);
+
+                // Execute streaming with the agent
+                $executor = $agentClass::run($prompt)->streaming(true)->withContext($context);
+                $stream = $executor->go();
+
+                $completeResponse = '';
+                $totalTokens = 0;
+
+                foreach ($stream as $chunk) {
+                    $text = method_exists($chunk, 'getContent') ?
+                        $chunk->getContent() :
+                        ($chunk->text ?? (string) $chunk);
+
+                    $tokens = $chunk->usage->outputTokens ?? 0;
+                    $totalTokens += $tokens;
+                    $completeResponse .= $text;
+
+                    // Output the chunk directly (Laravel Stream format)
+                    echo $text;
+
+                    if (ob_get_level()) {
+                        ob_flush();
+                    }
+                    flush();
+
+                    // Deduct credits for this chunk
+                    if ($tokens > 0) {
+                        $this->creditManager->deductCredits(
+                            $company,
+                            $tokens,
+                            'AI Chat - Streaming',
+                            [
+                                'conversation_id' => $conversation->id,
+                                'user_id' => $user->id,
+                                'engine_type' => $engineType,
+                            ]
+                        );
+                    }
+                }
+
+                // Save complete assistant response
+                $assistantMessage = $this->conversationService->addMessage(
+                    $conversation,
+                    'assistant',
+                    $completeResponse,
+                    [
+                        'tokens_used' => $totalTokens,
+                        'streaming' => true,
+                        'engine_type' => $workspace->engine_type,
+                    ]
+                );
+
+                Log::info('Streaming chat completed', [
+                    'conversation_id' => $conversation->id,
+                    'user_id' => $user->id,
+                    'total_tokens' => $totalTokens,
+                ]);
+
+            } catch (\Throwable $e) {
+                $this->errorMonitoring->trackError(
+                    'streaming_chat_error',
+                    $e->getMessage(),
+                    $user,
+                    $company,
+                    [
+                        'conversation_id' => $conversation->id ?? null,
+                        'workspace_id' => $workspace->id ?? null,
+                    ]
+                );
+
+                Log::error('Streaming chat error', [
+                    'conversation_id' => $conversation->id ?? null,
+                    'error' => $e->getMessage(),
+                ]);
+
+                // Send error message as response
+                echo 'I apologize, but I encountered an error while processing your request. Please try again.';
+            }
+        }, 200, [
+            'Content-Type' => 'text/plain; charset=utf-8',
+            'Cache-Control' => 'no-cache',
+            'X-Accel-Buffering' => 'no',
+        ]);
+    }
+
+    /**
      * Send Server-Sent Event
      */
     private function sendSSEEvent(string $event, array $data): void
@@ -196,51 +339,28 @@ class StreamingChatController extends Controller
     }
 
     /**
-     * Generate streaming response (placeholder for actual AI integration)
+     * Build prompt with conversation context for the AI agent
      */
-    private function generateStreamingResponse(string $message, Workspace $workspace): string
+    private function buildPromptWithContext(array $messages, array $context, string $engineType): string
     {
-        $engineType = $workspace->engine_type;
-        
-        if ($engineType === 'playcanvas') {
-            return "I'll help you with your PlayCanvas project. Based on your message: '{$message}', here's what I recommend:\n\n" .
-                   "1. First, let's check your current scene setup\n" .
-                   "2. Then we can add the necessary components\n" .
-                   "3. Finally, we'll implement the game logic\n\n" .
-                   "Let me know if you'd like me to proceed with any specific aspect!";
-        } else {
-            return "I'll assist you with your Unreal Engine project. Regarding: '{$message}', here's my suggestion:\n\n" .
-                   "1. We should start by examining your Blueprint structure\n" .
-                   "2. Next, we can implement the required functionality\n" .
-                   "3. Then we'll test and optimize the solution\n\n" .
-                   "Would you like me to help with any particular part?";
-        }
-    }
+        $conversationHistory = '';
 
-    /**
-     * Break response into chunks for streaming
-     */
-    private function chunkResponse(string $response): array
-    {
-        $words = explode(' ', $response);
-        $chunks = [];
-        $currentChunk = '';
-        $wordsPerChunk = 3; // Adjust for desired streaming speed
-
-        foreach ($words as $index => $word) {
-            $currentChunk .= ($currentChunk ? ' ' : '') . $word;
-            
-            if (($index + 1) % $wordsPerChunk === 0 || $index === count($words) - 1) {
-                $chunks[] = [
-                    'content' => $currentChunk . ($index === count($words) - 1 ? '' : ' '),
-                    'tokens' => $this->estimateTokens($currentChunk),
-                ];
-                $currentChunk = '';
-            }
+        // Build conversation history from messages
+        foreach ($messages as $message) {
+            $role = $message['role'] ?? 'user';
+            $content = $message['content'] ?? '';
+            $conversationHistory .= ucfirst($role) . ": " . $content . "\n\n";
         }
 
-        return $chunks;
+        // Add engine-specific context
+        $engineContext = $engineType === 'playcanvas' ?
+            "You are assisting with a PlayCanvas web game development project." :
+            "You are assisting with an Unreal Engine game development project.";
+
+        return $engineContext . "\n\nConversation:\n" . $conversationHistory;
     }
+
+
 
     /**
      * Estimate tokens for a text chunk

@@ -83,18 +83,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 // Real-time chat features
 Route::middleware(['auth:sanctum'])->group(function () {
-    // Streaming chat
+    // Streaming chat with Laravel Stream
     Route::post('/chat/stream', [StreamingChatController::class, 'stream']);
-    
+    Route::get('/chat/stream', [StreamingChatController::class, 'streamSSE']);
+
     // Typing indicators
     Route::post('/conversations/{conversationId}/typing', [RealtimeChatController::class, 'updateTypingStatus']);
     Route::get('/conversations/{conversationId}/typing', [RealtimeChatController::class, 'getTypingUsers']);
-    
+
     // Connection status
     Route::post('/workspaces/{workspaceId}/connection', [RealtimeChatController::class, 'updateConnectionStatus']);
     Route::get('/workspaces/{workspaceId}/connections', [RealtimeChatController::class, 'getConnectionStatuses']);
     Route::get('/workspaces/{workspaceId}/chat-stats', [RealtimeChatController::class, 'getChatStatistics']);
-    
+
     // Real-time collaboration features
     Route::get('/workspaces/{workspaceId}/collaboration-stats', [RealtimeChatController::class, 'getCollaborationStats']);
     Route::post('/workspaces/{workspaceId}/collaboration/join', [RealtimeChatController::class, 'joinCollaboration']);
@@ -110,7 +111,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/games/{gameId}/preview', [GameController::class, 'getGamePreview']);
     Route::put('/games/{gameId}', [GameController::class, 'updateGame']);
     Route::delete('/games/{gameId}', [GameController::class, 'deleteGame']);
-    
+
+    // Game sharing routes
+    Route::post('/games/{gameId}/share', [GameController::class, 'shareGame']);
+    Route::put('/games/{gameId}/sharing-settings', [GameController::class, 'updateSharingSettings']);
+    Route::delete('/games/{gameId}/share', [GameController::class, 'revokeShareLink']);
+    Route::get('/games/{gameId}/sharing-stats', [GameController::class, 'getSharingStats']);
+
     // Game publishing and build management
     Route::post('/games/{game}/build', [\App\Http\Controllers\Api\GamePublishingController::class, 'startBuild']);
     Route::get('/games/{game}/build/status', [\App\Http\Controllers\Api\GamePublishingController::class, 'getBuildStatus']);
@@ -118,6 +125,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/games/{game}/publish', [\App\Http\Controllers\Api\GamePublishingController::class, 'publishGame']);
     Route::post('/games/{game}/unpublish', [\App\Http\Controllers\Api\GamePublishingController::class, 'unpublishGame']);
     Route::post('/games/{game}/share-token', [\App\Http\Controllers\Api\GamePublishingController::class, 'generateShareToken']);
+
+    // Domain publishing routes
+    Route::post('/games/{game}/domain', [\App\Http\Controllers\Api\GameController::class, 'setupCustomDomain']);
+    Route::post('/games/{game}/domain/verify', [\App\Http\Controllers\Api\GameController::class, 'verifyDomain']);
+    Route::delete('/games/{game}/domain', [\App\Http\Controllers\Api\GameController::class, 'removeDomain']);
+    Route::get('/games/{game}/domain/status', [\App\Http\Controllers\Api\GameController::class, 'getDomainStatus']);
 });
 
 // Chat settings management routes
@@ -127,7 +140,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/chat/models', [ChatSettingsController::class, 'getModels']);
     Route::post('/chat/settings/reset', [ChatSettingsController::class, 'resetSettings']);
     Route::get('/chat/settings/{engineType}', [ChatSettingsController::class, 'getEngineSettings']);
-    
+
     // API Key Management
     Route::get('/chat/api-keys', [ChatSettingsController::class, 'getApiKeys']);
     Route::post('/chat/api-keys', [ChatSettingsController::class, 'saveApiKeys']);
@@ -167,20 +180,43 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Engine status and management
     Route::get('/workspaces/{workspaceId}/engine/status', [EngineController::class, 'getEngineStatus']);
     Route::get('/workspaces/{workspaceId}/context', [EngineController::class, 'getWorkspaceContext']);
-    
+
     // Unreal Engine specific routes
     Route::get('/workspaces/{workspaceId}/unreal/status', [EngineController::class, 'getUnrealStatus']);
     Route::post('/workspaces/{workspaceId}/unreal/test', [EngineController::class, 'testUnrealConnection']);
-    
+
     // PlayCanvas specific routes
     Route::get('/workspaces/{workspaceId}/playcanvas/status', [EngineController::class, 'getPlayCanvasStatus']);
     Route::post('/workspaces/{workspaceId}/playcanvas/refresh', [EngineController::class, 'refreshPlayCanvasPreview']);
     Route::post('/workspaces/{workspaceId}/playcanvas/start', [EngineController::class, 'startPlayCanvasMcp']);
     Route::post('/workspaces/{workspaceId}/playcanvas/stop', [EngineController::class, 'stopPlayCanvasMcp']);
-    
+
     // Engine AI configuration
     Route::get('/engine/{engineType}/ai-config', [EngineController::class, 'getEngineAiConfig']);
     Route::put('/engine/{engineType}/ai-config', [EngineController::class, 'updateEngineAiConfig']);
+});
+
+// GDevelop integration routes
+Route::middleware(['auth:sanctum', 'gdevelop.enabled'])->prefix('gdevelop')->name('api.gdevelop.')->group(function () {
+    Route::post('/chat', [\App\Http\Controllers\Api\GDevelopChatController::class, 'chat'])->name('chat');
+    Route::get('/preview/{sessionId}', [\App\Http\Controllers\Api\GDevelopChatController::class, 'preview'])->name('preview');
+    Route::post('/export/{sessionId}', [\App\Http\Controllers\Api\GDevelopExportController::class, 'export'])->name('export');
+    Route::get('/export/{sessionId}/status', [\App\Http\Controllers\Api\GDevelopExportController::class, 'status'])->name('export.status');
+    Route::get('/export/{sessionId}/download', [\App\Http\Controllers\Api\GDevelopExportController::class, 'download'])->name('export.download');
+    Route::delete('/export/{sessionId}', [\App\Http\Controllers\Api\GDevelopExportController::class, 'delete'])->name('export.delete');
+    Route::post('/export/cleanup', [\App\Http\Controllers\Api\GDevelopExportController::class, 'cleanup'])->name('export.cleanup');
+    Route::get('/session/{sessionId}', [\App\Http\Controllers\Api\GDevelopChatController::class, 'getSession'])->name('session');
+    Route::delete('/session/{sessionId}', [\App\Http\Controllers\Api\GDevelopChatController::class, 'deleteSession'])->name('session.delete');
+});
+
+// GDevelop preview file serving (public access for iframe loading)
+Route::prefix('gdevelop')->name('gdevelop.')->group(function () {
+    Route::get('/preview/{sessionId}/serve/{filePath?}', [\App\Http\Controllers\Api\GDevelopPreviewController::class, 'serveFile'])
+        ->name('preview.serve')
+        ->where('filePath', '.*');
+    Route::post('/preview/{sessionId}/refresh', [\App\Http\Controllers\Api\GDevelopPreviewController::class, 'refresh'])
+        ->name('preview.refresh')
+        ->middleware('auth:sanctum');
 });
 
 // Mobile-specific API routes

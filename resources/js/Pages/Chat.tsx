@@ -12,14 +12,17 @@ import ChatSettingsModal from '@/components/chat/ChatSettingsModal';
 import EngineContext from '@/components/engine/EngineContext';
 import UnrealConnectionModal from '@/components/engine/UnrealConnectionModal';
 import PlayCanvasPreview from '@/components/engine/PlayCanvasPreview';
+import GDevelopChatInterface from '@/components/gdevelop/GDevelopChatInterface';
+import GDevelopPreview from '@/components/gdevelop/GDevelopPreview';
 import TypingIndicator, { AITypingIndicator } from '@/components/chat/TypingIndicator';
 import ConnectionStatus, { SimpleConnectionIndicator } from '@/components/chat/ConnectionStatus';
 import StreamingMessage, { StreamingProgress } from '@/components/chat/StreamingMessage';
+import StreamingChat from '@/components/chat/StreamingChat';
 import { engineService, EngineStatus, UnrealConnectionStatus } from '@/services/engineService';
 import { getRealtimeChatService, RealtimeChatService } from '@/services/realtimeChatService';
 import { useToast } from '@/components/ui/use-toast';
-import { 
-    Settings, 
+import {
+    Settings,
     Bot,
     User,
     Loader2,
@@ -32,7 +35,7 @@ import {
 interface Workspace {
     id: number;
     name: string;
-    engine_type: 'playcanvas' | 'unreal';
+    engine_type: 'playcanvas' | 'unreal' | 'gdevelop';
     status: string;
     preview_url?: string;
     published_url?: string;
@@ -76,6 +79,7 @@ interface ChatSettings {
 
 interface ChatPageProps extends PageProps {
     workspace: Workspace;
+    allWorkspaces: Workspace[];
     conversations: Conversation[];
     providers: Record<string, any>;
     currentConversation?: Conversation;
@@ -84,14 +88,14 @@ interface ChatPageProps extends PageProps {
 }
 
 export default function Chat() {
-    const { 
-        workspace, 
-        conversations, 
+    const {
+        workspace,
+        conversations,
         currentConversation,
         messages: initialMessages = [],
         chatSettings
     } = usePage<ChatPageProps>().props;
-    
+
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [currentMessage, setCurrentMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -101,6 +105,7 @@ export default function Chat() {
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isLiveUpdatesEnabled, setIsLiveUpdatesEnabled] = useState(true);
+    const [gdevelopGameData, setGDevelopGameData] = useState<any>(null);
     const [settings, setSettings] = useState<ChatSettings>(chatSettings || {
         provider: 'anthropic',
         model: 'claude-3-5-sonnet-20241022',
@@ -114,7 +119,7 @@ export default function Chat() {
             stream_responses: true,
         }
     });
-    
+
     // Real-time chat state
     const [isStreaming, setIsStreaming] = useState(false);
     const [streamingContent, setStreamingContent] = useState('');
@@ -125,18 +130,19 @@ export default function Chat() {
         websocket: false,
         reconnectAttempts: 0,
     });
-    
+
     const { toast } = useToast();
     const realtimeChatService = useRef<RealtimeChatService | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const streamingContentRef = useRef<string>('');
 
     // Initialize real-time chat service
     useEffect(() => {
         if (workspace) {
             realtimeChatService.current = getRealtimeChatService();
             realtimeChatService.current.initialize(workspace.id, currentConversation?.id);
-            
+
             // Update connection status periodically with proper comparison
             const statusInterval = setInterval(() => {
                 if (realtimeChatService.current) {
@@ -162,12 +168,21 @@ export default function Chat() {
         }
     }, [workspace, currentConversation?.id]);
 
-    // Load initial engine status
+    // Load initial engine status and auto-start PlayCanvas MCP
     useEffect(() => {
         if (workspace) {
             loadEngineStatus();
             if (workspace.engine_type === 'unreal') {
                 loadUnrealConnectionStatus();
+            } else if (workspace.engine_type === 'playcanvas') {
+                // Auto-start PlayCanvas MCP server if not running
+                autoStartPlayCanvasMcp();
+            } else if (workspace.engine_type === 'gdevelop') {
+                // GDevelop doesn't need MCP auto-start, just set ready status
+                setEngineStatus({
+                    status: 'connected',
+                    message: 'Ready for game development'
+                });
             }
         }
     }, [workspace]);
@@ -184,12 +199,12 @@ export default function Chat() {
     const handleTyping = () => {
         if (currentConversation?.id && realtimeChatService.current) {
             realtimeChatService.current.startTyping(currentConversation.id);
-            
+
             // Clear existing timeout
             if (typingTimeoutRef.current) {
                 clearTimeout(typingTimeoutRef.current);
             }
-            
+
             // Stop typing after 3 seconds of inactivity
             typingTimeoutRef.current = setTimeout(() => {
                 if (currentConversation?.id && realtimeChatService.current) {
@@ -225,6 +240,46 @@ export default function Chat() {
         }
     };
 
+    const autoStartPlayCanvasMcp = async () => {
+        try {
+            // Check if MCP is already running
+            const status = await engineService.getPlayCanvasStatus(workspace.id);
+
+            if (!status.mcp_running) {
+                // Start MCP server automatically
+                setEngineStatus({ status: 'connecting', message: 'Initializing workspace...' });
+
+                const result = await engineService.startPlayCanvasMcp(workspace.id);
+
+                if (result.success) {
+                    setEngineStatus({
+                        status: 'connected',
+                        message: 'Ready for game development'
+                    });
+
+                    // Refresh engine status to get updated info
+                    await loadEngineStatus();
+                } else {
+                    setEngineStatus({
+                        status: 'error',
+                        message: 'Unable to initialize workspace'
+                    });
+                }
+            } else {
+                setEngineStatus({
+                    status: 'connected',
+                    message: 'Ready for game development'
+                });
+            }
+        } catch (error) {
+            console.error('Failed to auto-start PlayCanvas MCP:', error);
+            setEngineStatus({
+                status: 'error',
+                message: 'Unable to initialize workspace'
+            });
+        }
+    };
+
     const handleConversationSelect = (conversationId: number) => {
         // Navigate to the conversation
         router.get(`/chat?conversation=${conversationId}`, {}, {
@@ -234,13 +289,42 @@ export default function Chat() {
 
     const handleSendMessage = async () => {
         if (!currentMessage.trim() || isLoading || isStreaming) return;
-        if (!currentConversation?.id) {
-            toast({
-                title: "No Conversation",
-                description: "Please select or create a conversation first.",
-                variant: "destructive",
-            });
-            return;
+
+        console.log('Sending message:', currentMessage.trim());
+        console.log('Current conversation:', currentConversation);
+        console.log('Workspace:', workspace);
+
+        // If no conversation exists, create one automatically
+        let conversationToUse = currentConversation;
+        if (!conversationToUse?.id) {
+            console.log('No conversation found, creating new one...');
+            try {
+                const response = await axios.post(`/api/workspaces/${workspace.id}/conversations`, {
+                    title: 'New Chat'
+                });
+
+                if (response.data.success) {
+                    conversationToUse = response.data.conversation;
+                    // Update the page to include the new conversation
+                    window.location.href = `/chat?workspace=${workspace.id}&conversation=${conversationToUse.id}`;
+                    return;
+                } else {
+                    toast({
+                        title: "Error",
+                        description: "Failed to create conversation. Please try again.",
+                        variant: "destructive",
+                    });
+                    return;
+                }
+            } catch (error) {
+                console.error('Failed to create conversation:', error);
+                toast({
+                    title: "Error",
+                    description: "Failed to create conversation. Please try again.",
+                    variant: "destructive",
+                });
+                return;
+            }
         }
 
         const messageText = currentMessage.trim();
@@ -249,7 +333,7 @@ export default function Chat() {
 
         // Stop typing indicator
         if (realtimeChatService.current) {
-            realtimeChatService.current.stopTyping(currentConversation.id);
+            realtimeChatService.current.stopTyping(conversationToUse.id);
         }
 
         try {
@@ -264,13 +348,15 @@ export default function Chat() {
 
             // Use streaming if enabled
             if (settings.preferences.stream_responses && realtimeChatService.current) {
+                console.log('Starting streaming chat with conversation:', conversationToUse.id);
                 setIsStreaming(true);
                 setStreamingContent('');
                 setStreamingTokens(0);
-                
+                streamingContentRef.current = '';
+
                 realtimeChatService.current.startStreamingChat(
                     messageText,
-                    currentConversation.id,
+                    conversationToUse.id,
                     workspace.id,
                     {
                         onUserMessage: (messageId, content) => {
@@ -283,27 +369,35 @@ export default function Chat() {
                             setIsAITyping(false);
                         },
                         onChunk: (content, tokens) => {
-                            setStreamingContent(prev => prev + content);
+                            setStreamingContent(prev => {
+                                const newContent = prev + content;
+                                streamingContentRef.current = newContent;
+                                return newContent;
+                            });
                             setStreamingTokens(prev => prev + tokens);
                         },
                         onComplete: (messageId, totalTokens) => {
-                            // Add complete assistant message
+                            // Use the ref to get the current streaming content
+                            const finalContent = streamingContentRef.current;
+
                             const assistantMessage: Message = {
                                 id: messageId,
                                 role: 'assistant',
-                                content: streamingContent,
+                                content: finalContent,
                                 timestamp: new Date().toISOString(),
                                 metadata: { tokens_used: totalTokens },
                             };
+
                             setMessages(prev => [...prev, assistantMessage]);
-                            
+
                             // Reset streaming state
                             setIsStreaming(false);
                             setStreamingContent('');
                             setStreamingTokens(0);
+                            streamingContentRef.current = '';
                             setIsAITyping(false);
                             setIsLoading(false);
-                            
+
                             toast({
                                 title: "Message Sent",
                                 description: `Response completed (${totalTokens} tokens used)`,
@@ -313,9 +407,10 @@ export default function Chat() {
                             setIsStreaming(false);
                             setStreamingContent('');
                             setStreamingTokens(0);
+                            streamingContentRef.current = '';
                             setIsAITyping(false);
                             setIsLoading(false);
-                            
+
                             toast({
                                 title: "Error",
                                 description: error || "Failed to send message. Please try again.",
@@ -330,7 +425,7 @@ export default function Chat() {
                     const response = await axios.post('/api/chat', {
                         message: messageText,
                         workspace_id: workspace.id,
-                        conversation_id: currentConversation.id,
+                        conversation_id: conversationToUse.id,
                     });
 
                     // Handle successful response
@@ -342,9 +437,9 @@ export default function Chat() {
                             role: 'assistant',
                             timestamp: new Date().toISOString(),
                         };
-                        
+
                         setMessages(prev => [...prev, aiMessage]);
-                        
+
                         toast({
                             title: "Success",
                             description: "Message sent successfully!",
@@ -366,8 +461,9 @@ export default function Chat() {
             setIsLoading(false);
             setIsStreaming(false);
             setStreamingContent('');
+            streamingContentRef.current = '';
             setIsAITyping(false);
-            
+
             toast({
                 title: "Error",
                 description: "Failed to send message. Please try again.",
@@ -380,9 +476,10 @@ export default function Chat() {
         setIsStreaming(false);
         setStreamingContent('');
         setStreamingTokens(0);
+        streamingContentRef.current = '';
         setIsAITyping(false);
         setIsLoading(false);
-        
+
         // In a real implementation, you would cancel the SSE connection here
         if (realtimeChatService.current) {
             // Add method to stop streaming in the service
@@ -441,13 +538,24 @@ export default function Chat() {
     };
 
     const getEngineDisplayName = () => {
-        return workspace.engine_type === 'playcanvas' ? 'PlayCanvas' : 'Unreal Engine';
+        switch (workspace.engine_type) {
+            case 'playcanvas':
+                return 'PlayCanvas';
+            case 'gdevelop':
+                return 'GDevelop';
+            default:
+                return 'Unreal Engine';
+        }
     };
 
     return (
-        <MainLayout title={`Chat - ${workspace.name}`}>
+        <MainLayout
+            title={`Chat - ${workspace.name}`}
+            currentWorkspace={workspace}
+            workspaces={usePage<ChatPageProps>().props.allWorkspaces || []}
+        >
             <Head title={`Chat - ${workspace.name}`} />
-            
+
             <div className="flex h-[calc(100vh-4rem)]">
                 {/* Main Chat Area */}
                 <div className="flex-1 flex flex-col">
@@ -461,14 +569,14 @@ export default function Chat() {
                                         {getEngineDisplayName()}
                                     </Badge>
                                     <span>•</span>
-                                    <SimpleConnectionIndicator 
+                                    <SimpleConnectionIndicator
                                         isConnected={connectionStatus.websocket}
                                         isReconnecting={connectionStatus.reconnectAttempts > 0}
                                     />
                                 </div>
                             </div>
-                            <Button 
-                                variant="outline" 
+                            <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={() => setIsSettingsModalOpen(true)}
                             >
@@ -478,130 +586,29 @@ export default function Chat() {
                         </div>
                     </div>
 
-                    {/* Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                        {messages.length === 0 ? (
-                            <div className="flex items-center justify-center h-full text-center">
-                                <div className="space-y-4">
-                                    <Bot className="w-12 h-12 mx-auto text-muted-foreground" />
-                                    <div>
-                                        <h3 className="text-lg font-medium">Welcome to {getEngineDisplayName()} AI Assistant</h3>
-                                        <p className="text-muted-foreground">
-                                            Start a conversation to get help with your game development project.
-                                        </p>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2 justify-center">
-                                        <Button variant="outline" size="sm" onClick={() => setCurrentMessage("Create a simple platformer game")}>
-                                            Create a platformer
-                                        </Button>
-                                        <Button variant="outline" size="sm" onClick={() => setCurrentMessage("Help me with character movement")}>
-                                            Character movement
-                                        </Button>
-                                        <Button variant="outline" size="sm" onClick={() => setCurrentMessage("Add physics to my game")}>
-                                            Add physics
-                                        </Button>
-                                    </div>
+                    {/* Streaming Chat Component */}
+                    {currentConversation?.id ? (
+                        <StreamingChat
+                            workspaceId={workspace.id}
+                            conversationId={currentConversation.id}
+                            initialMessages={messages}
+                            onMessageAdded={(message) => {
+                                setMessages(prev => [...prev, message]);
+                            }}
+                        />
+                    ) : (
+                        <div className="flex-1 flex items-center justify-center text-center p-4">
+                            <div className="space-y-4">
+                                <Bot className="w-12 h-12 mx-auto text-muted-foreground" />
+                                <div>
+                                    <h3 className="text-lg font-medium">Welcome to {getEngineDisplayName()} AI Assistant</h3>
+                                    <p className="text-muted-foreground">
+                                        Please create or select a conversation to start chatting.
+                                    </p>
                                 </div>
                             </div>
-                        ) : (
-                            messages.map((message) => (
-                                <div
-                                    key={message.id}
-                                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                                >
-                                    <div
-                                        className={`max-w-[80%] rounded-lg p-3 ${
-                                            message.role === 'user'
-                                                ? 'bg-primary text-primary-foreground'
-                                                : 'bg-muted'
-                                        }`}
-                                    >
-                                        <div className="flex items-start space-x-2">
-                                            {message.role === 'assistant' && (
-                                                <Bot className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                                            )}
-                                            {message.role === 'user' && (
-                                                <User className="w-5 h-5 mt-0.5 flex-shrink-0" />
-                                            )}
-                                            <div className="flex-1">
-                                                <div className="whitespace-pre-wrap">{message.content}</div>
-                                                <div className="text-xs opacity-70 mt-1">
-                                                    {new Date(message.timestamp).toLocaleTimeString()}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                        
-                        {/* Streaming Message */}
-                        {isStreaming && streamingContent && (
-                            <StreamingMessage
-                                content={streamingContent}
-                                isStreaming={isStreaming}
-                                totalTokens={streamingTokens}
-                                onStop={handleStopStreaming}
-                            />
-                        )}
-                        
-                        {/* AI Typing Indicator */}
-                        <AITypingIndicator isTyping={isAITyping || (isLoading && !isStreaming)} />
-                        
-                        {/* User Typing Indicators */}
-                        {currentConversation?.id && (
-                            <TypingIndicator conversationId={currentConversation.id} />
-                        )}
-                        
-                        {/* Streaming Progress */}
-                        {isStreaming && (
-                            <StreamingProgress
-                                isActive={isStreaming}
-                                tokensUsed={streamingTokens}
-                                className="mb-4"
-                            />
-                        )}
-                        
-                        <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Message Input */}
-                    <div className="border-t bg-background p-4">
-                        <div className="flex space-x-2">
-                            <Textarea
-                                value={currentMessage}
-                                onChange={(e) => {
-                                    setCurrentMessage(e.target.value);
-                                    handleTyping();
-                                }}
-                                onKeyDown={handleKeyDown}
-                                placeholder={`Ask your ${getEngineDisplayName()} AI assistant anything...`}
-                                className="flex-1 min-h-[60px] max-h-[120px] resize-none"
-                                disabled={isLoading || isStreaming}
-                            />
-                            {isStreaming ? (
-                                <Button
-                                    onClick={handleStopStreaming}
-                                    variant="destructive"
-                                    size="lg"
-                                >
-                                    <Square className="w-4 h-4" />
-                                </Button>
-                            ) : (
-                                <Button
-                                    onClick={handleSendMessage}
-                                    disabled={!currentMessage.trim() || isLoading}
-                                    size="lg"
-                                >
-                                    {isLoading ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <Send className="w-4 h-4" />
-                                    )}
-                                </Button>
-                            )}
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Right Sidebar */}
@@ -627,6 +634,37 @@ export default function Chat() {
                         />
                     )}
 
+                    {/* GDevelop Chat Interface */}
+                    {workspace.engine_type === 'gdevelop' && currentConversation?.id && (
+                        <GDevelopChatInterface
+                            workspaceId={workspace.id.toString()}
+                            sessionId={currentConversation.id.toString()}
+                            onGameGenerated={(gameData) => {
+                                setGDevelopGameData(gameData);
+                            }}
+                            onPreviewReady={(previewUrl) => {
+                                // Update workspace preview URL if needed
+                                console.log('GDevelop preview ready:', previewUrl);
+                            }}
+                        />
+                    )}
+
+                    {/* GDevelop Game Preview */}
+                    {workspace.engine_type === 'gdevelop' && gdevelopGameData?.previewUrl && (
+                        <GDevelopPreview
+                            gameData={gdevelopGameData}
+                            previewUrl={gdevelopGameData.previewUrl}
+                            onExport={() => {
+                                // Export functionality is handled within GDevelopChatInterface
+                                console.log('Export requested for GDevelop game');
+                            }}
+                            onRefresh={() => {
+                                // Refresh preview
+                                console.log('Refresh requested for GDevelop preview');
+                            }}
+                        />
+                    )}
+
                     {/* Game Actions */}
                     <Card>
                         <CardHeader className="pb-3">
@@ -636,18 +674,18 @@ export default function Chat() {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     className="w-full justify-start"
                                     onClick={() => window.open(workspace.preview_url || '#', '_blank')}
                                     disabled={!workspace.preview_url}
                                 >
                                     Preview Game
                                 </Button>
-                                <Button 
-                                    variant="outline" 
-                                    size="sm" 
+                                <Button
+                                    variant="outline"
+                                    size="sm"
                                     className="w-full justify-start"
                                     onClick={() => {
                                         if (workspace.published_url) {
@@ -662,9 +700,9 @@ export default function Chat() {
                                 >
                                     Share Game
                                 </Button>
-                                <Button 
-                                    variant="default" 
-                                    size="sm" 
+                                <Button
+                                    variant="default"
+                                    size="sm"
                                     className="w-full justify-start"
                                     onClick={() => router.get('/games')}
                                 >
@@ -682,8 +720,8 @@ export default function Chat() {
                                     <MessageSquare className="w-5 h-5" />
                                     <span>Conversations</span>
                                 </div>
-                                <Button 
-                                    variant="outline" 
+                                <Button
+                                    variant="outline"
                                     size="sm"
                                     onClick={() => router.get('/chat')}
                                 >
@@ -748,11 +786,11 @@ export default function Chat() {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-muted-foreground">Status:</span>
-                                    <Badge 
-                                        variant="outline" 
+                                    <Badge
+                                        variant="outline"
                                         className={
-                                            connectionStatus.websocket 
-                                                ? "bg-green-100 text-green-800 border-green-200" 
+                                            connectionStatus.websocket
+                                                ? "bg-green-100 text-green-800 border-green-200"
                                                 : "bg-red-100 text-red-800 border-red-200"
                                         }
                                     >

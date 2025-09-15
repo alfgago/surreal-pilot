@@ -22,29 +22,23 @@ class ChatController extends Controller
         $user = Auth::user();
         $company = $user->currentCompany;
 
-        // Check if user has selected an engine
-        if (!$user->hasSelectedEngine()) {
-            return redirect()->route('engine.selection');
-        }
+        // Get all workspaces for the company
+        $allWorkspaces = $company->workspaces()->orderBy('updated_at', 'desc')->get();
 
         // Check if workspace is specified in the query or session
         $workspaceId = $request->query('workspace') ?? session('selected_workspace_id');
         $workspace = null;
 
         if ($workspaceId) {
-            $workspace = Workspace::where('id', $workspaceId)
-                ->where('company_id', $company->id)
-                ->where('engine_type', $user->getSelectedEngineType())
-                ->first();
-
+            $workspace = $allWorkspaces->firstWhere('id', $workspaceId);
             if ($workspace) {
                 session(['selected_workspace_id' => $workspace->id]);
             }
         }
 
-        // If no valid workspace, redirect to workspace selection
+        // If no valid workspace, redirect to workspaces
         if (!$workspace) {
-            return redirect()->route('workspace.selection');
+            return redirect()->route('workspaces.index');
         }
 
         // Get recent conversations for this workspace
@@ -108,6 +102,14 @@ class ChatController extends Controller
             ]
         ];
 
-        return \Inertia\Inertia::render('Chat', compact('workspace', 'conversations', 'providers', 'chatSettings', 'currentConversation', 'messages'));
+        return \Inertia\Inertia::render('Chat', [
+            'workspace' => $workspace,
+            'allWorkspaces' => $allWorkspaces,
+            'conversations' => $conversations,
+            'providers' => $providers,
+            'chatSettings' => $chatSettings,
+            'currentConversation' => $currentConversation,
+            'messages' => $messages,
+        ]);
     }
 }

@@ -74,7 +74,7 @@ export default function MainLayout({
     const [showMobileSidebar, setShowMobileSidebar] = useState(false);
     
     const currentPath = ziggy?.location || '';
-    const currentEngine = currentWorkspace?.engine || 'playcanvas';
+    const currentEngine = currentWorkspace?.engine_type || 'playcanvas';
 
     // Filter navigation based on engine and user permissions
     const filteredNavItems = navigationItems.filter((item) => {
