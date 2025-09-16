@@ -22,11 +22,31 @@ export function WorkspaceSwitcher({
     workspaces = []
 }: WorkspaceSwitcherProps) {
     const getEngineIcon = (engine: string) => {
-        return engine === 'playcanvas' ? Globe : Code;
+        switch (engine) {
+            case 'playcanvas': return Globe;
+            case 'gdevelop': return Gamepad2;
+            case 'godot': return Code;
+            default: return Code;
+        }
     };
 
     const getEngineColor = (engine: string) => {
-        return engine === 'playcanvas' ? 'text-blue-500' : 'text-purple-500';
+        switch (engine) {
+            case 'playcanvas': return 'text-blue-500';
+            case 'gdevelop': return 'text-green-500';
+            case 'godot': return 'text-orange-500';
+            default: return 'text-purple-500';
+        }
+    };
+
+    const getEngineDisplayName = (engine: string) => {
+        switch (engine) {
+            case 'playcanvas': return 'PlayCanvas';
+            case 'gdevelop': return 'No-Code Games';
+            case 'godot': return 'Godot';
+            case 'unreal': return 'Unreal Engine';
+            default: return engine;
+        }
     };
 
     if (!currentWorkspace) {
@@ -51,7 +71,7 @@ export function WorkspaceSwitcher({
                         <div className="min-w-0 text-left">
                             <div className="font-medium text-sm truncate">{currentWorkspace.name}</div>
                             <div className="text-xs text-muted-foreground">
-                                {currentWorkspace.engine_type === 'playcanvas' ? 'PlayCanvas' : 'Unreal Engine'}
+                                {getEngineDisplayName(currentWorkspace.engine_type)}
                             </div>
                         </div>
                     </div>
@@ -76,7 +96,7 @@ export function WorkspaceSwitcher({
                                     <div className="flex-1 min-w-0">
                                         <div className="font-medium text-sm truncate">{workspace.name}</div>
                                         <Badge variant="secondary" className="text-xs">
-                                            {workspace.engine_type === 'playcanvas' ? 'PlayCanvas' : 'Unreal'}
+                                            {getEngineDisplayName(workspace.engine_type)}
                                         </Badge>
                                     </div>
                                 </div>

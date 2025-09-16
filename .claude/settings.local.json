@@ -1,0 +1,44 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
+    "ANTHROPIC_API_KEY": "sk-82aac38759ba426ea44f2a75f0152d2c",
+    "API_TIMEOUT_MS": "600000",
+    "ANTHROPIC_MODEL": "deepseek-reasoner",
+    "ANTHROPIC_SMALL_FAST_MODEL": "deepseek-reasoner",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "1",
+    "OTEL_METRICS_EXPORTER": "otlp"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(composer dump-autoload:*)",
+      "Bash(php:*)",
+      "Bash(composer show:*)",
+      "Bash(curl:*)",
+      "Bash(npm run build)",
+      "Bash(mysql:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "mcpServers": {
+    "ref-tools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "ref-tools-mcp"
+      ],
+      "env": {
+        "REF_API_KEY": "ref-a0efadf19ae43c51c776"
+      }
+    },
+    "laravel-boost": {
+      "command": "php",
+      "args": [
+        "artisan",
+        "boost:mcp"
+      ]
+    }
+  }
+}

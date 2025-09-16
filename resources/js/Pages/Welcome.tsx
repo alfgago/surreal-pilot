@@ -12,14 +12,14 @@ export default function Welcome() {
     return (
         <>
             <Head title="SurrealPilot - AI Copilot for Game Development">
-                <meta name="description" content="Accelerate your game development with intelligent assistance for Unreal Engine and PlayCanvas. Get real-time code suggestions, debugging help, and creative guidance." />
-                <meta name="keywords" content="AI, game development, Unreal Engine, PlayCanvas, copilot, code assistance" />
+                <meta name="description" content="Create games instantly with AI-powered chat. Build no-code games with JavaScript export and instant browser preview. Get real-time assistance and creative guidance." />
+                <meta name="keywords" content="AI, game development, no-code games, JavaScript, instant preview, copilot, game creation" />
                 <meta property="og:title" content="SurrealPilot - AI Copilot for Game Development" />
-                <meta property="og:description" content="Accelerate your game development with intelligent assistance for Unreal Engine and PlayCanvas." />
+                <meta property="og:description" content="Create games instantly with AI-powered chat. Build no-code games with JavaScript export and instant browser preview." />
                 <meta property="og:type" content="website" />
                 <meta name="twitter:card" content="summary_large_image" />
                 <meta name="twitter:title" content="SurrealPilot - AI Copilot for Game Development" />
-                <meta name="twitter:description" content="Accelerate your game development with intelligent assistance for Unreal Engine and PlayCanvas." />
+                <meta name="twitter:description" content="Create games instantly with AI-powered chat. Build no-code games with JavaScript export and instant browser preview." />
             </Head>
             
             <div className="min-h-screen bg-background">
@@ -92,8 +92,8 @@ export default function Welcome() {
                             <span className="text-primary block">Game Development</span>
                         </h1>
                         <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                            Accelerate your game development with intelligent assistance for Unreal Engine and PlayCanvas. Get real-time
-                            code suggestions, debugging help, and creative guidance.
+                            Create games instantly with AI-powered chat. Build no-code games with JavaScript export and instant browser preview.
+                            Get real-time assistance, debugging help, and creative guidance.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 justify-center">
                             <Button size="lg" className="text-lg px-8" asChild>
@@ -131,9 +131,9 @@ export default function Welcome() {
                                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                                         <Code className="w-6 h-6 text-primary" />
                                     </div>
-                                    <CardTitle className="font-serif font-bold">Multi-Engine Support</CardTitle>
+                                    <CardTitle className="font-serif font-bold">No-Code Game Creation</CardTitle>
                                     <CardDescription>
-                                        Works seamlessly with Unreal Engine C++/Blueprints and PlayCanvas for web/mobile games
+                                        Build games instantly with AI chat, JavaScript export, and instant browser preview
                                     </CardDescription>
                                 </CardHeader>
                             </Card>
@@ -179,9 +179,9 @@ export default function Welcome() {
                                     <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
                                         <Gamepad2 className="w-6 h-6 text-primary" />
                                     </div>
-                                    <CardTitle className="font-serif font-bold">Live Game Preview</CardTitle>
+                                    <CardTitle className="font-serif font-bold">Instant Game Preview</CardTitle>
                                     <CardDescription>
-                                        Instant preview of PlayCanvas games with real-time updates and testing capabilities
+                                        Real-time browser preview with instant updates and testing capabilities for all games
                                     </CardDescription>
                                 </CardHeader>
                             </Card>

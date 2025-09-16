@@ -1,28 +1,28 @@
 <?php
 
 return [
-    // Always use Vizra ADK with Anthropic Claude
+    // Always use Vizra ADK with DeepSeek
     'orchestrator' => 'vizra',
-    'provider' => 'anthropic',
-    'model' => env('AI_MODEL', 'claude-3-5-sonnet-20241022'),
+    'provider' => env('AI_PROVIDER', 'deepseek'),
+    'model' => env('AI_MODEL', 'deepseek-chat'),
 
     // Engine-specific Vizra agents
     'agents' => [
         'playcanvas' => [
             'class' => \App\Agents\PlayCanvasAgent::class,
-            'model' => env('AI_MODEL_PLAYCANVAS', 'claude-3-5-sonnet-20241022'),
+            'model' => env('AI_MODEL_PLAYCANVAS', 'deepseek-chat'),
             'temperature' => 0.2,
             'max_tokens' => 1200,
         ],
         'unreal' => [
             'class' => \App\Agents\UnrealAgent::class,
-            'model' => env('AI_MODEL_UNREAL', 'claude-3-5-sonnet-20241022'),
+            'model' => env('AI_MODEL_UNREAL', 'deepseek-chat'),
             'temperature' => 0.2,
             'max_tokens' => 1200,
         ],
         'gdevelop' => [
             'class' => \App\Agents\GDevelopAgent::class,
-            'model' => env('AI_MODEL_GDEVELOP', 'claude-3-5-sonnet-20241022'),
+            'model' => env('AI_MODEL_GDEVELOP', 'deepseek-chat'),
             'temperature' => 0.2,
             'max_tokens' => 1200,
         ],

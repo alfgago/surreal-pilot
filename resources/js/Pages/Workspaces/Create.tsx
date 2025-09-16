@@ -88,10 +88,12 @@ export default function CreateWorkspace({ engines }: CreateWorkspaceProps) {
 
     const getEngineIcon = (engineType: string) => {
         switch (engineType) {
-            case 'playcanvas':
-                return <Monitor className="w-6 h-6 text-primary" />;
             case 'gdevelop':
                 return <Gamepad2 className="w-6 h-6 text-primary" />;
+            case 'godot':
+                return <Gamepad2 className="w-6 h-6 text-primary" />;
+            case 'playcanvas':
+                return <Monitor className="w-6 h-6 text-primary" />;
             case 'unreal':
                 return <Gamepad2 className="w-6 h-6 text-primary" />;
             default:

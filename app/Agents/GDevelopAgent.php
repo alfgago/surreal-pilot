@@ -12,10 +12,10 @@ class GDevelopAgent extends BaseLlmAgent
     public function __construct()
     {
         parent::__construct();
-        
-        // Use Anthropic Claude for GDevelop development
-        $this->setProvider('anthropic');
-        $this->setModel(config('ai.agents.gdevelop.model', 'claude-3-5-sonnet-20241022'));
+
+        // Use configured provider for GDevelop development
+        $this->setProvider(config('ai.provider', 'deepseek'));
+        $this->setModel(config('ai.agents.gdevelop.model', 'deepseek-chat'));
         $this->setTemperature(config('ai.agents.gdevelop.temperature', 0.2));
         $this->setMaxTokens(config('ai.agents.gdevelop.max_tokens', 1200));
     }

@@ -542,7 +542,7 @@ export default function Chat() {
             case 'playcanvas':
                 return 'PlayCanvas';
             case 'gdevelop':
-                return 'GDevelop';
+                return 'No-Code Games';
             default:
                 return 'Unreal Engine';
         }

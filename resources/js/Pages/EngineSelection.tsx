@@ -48,6 +48,10 @@ export default function EngineSelection({ engines }: EngineSelectionProps) {
 
     const getEngineIcon = (engineType: string) => {
         switch (engineType) {
+            case 'gdevelop':
+                return <Gamepad2 className="w-8 h-8 text-primary" />;
+            case 'godot':
+                return <Gamepad2 className="w-8 h-8 text-primary" />;
             case 'playcanvas':
                 return <Monitor className="w-8 h-8 text-primary" />;
             case 'unreal':

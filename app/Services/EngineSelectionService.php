@@ -19,35 +19,17 @@ class EngineSelectionService
     {
         try {
             return [
-                'playcanvas' => [
-                    'type' => 'playcanvas',
-                    'name' => 'PlayCanvas',
-                    'description' => 'Web and mobile game development with instant preview and publishing',
-                    'icon' => '/images/engines/playcanvas-icon.svg',
-                    'features' => [
-                        'Web and mobile games',
-                        'Instant preview',
-                        'One-click publishing',
-                        'Touch-optimized',
-                        'Real-time collaboration'
-                    ],
-                    'available' => $this->isEngineAvailable('playcanvas'),
-                    'requirements' => [
-                        'Modern web browser',
-                        'Internet connection for publishing'
-                    ]
-                ],
                 'gdevelop' => [
                     'type' => 'gdevelop',
-                    'name' => 'GDevelop',
-                    'description' => 'No-code game development with AI-powered chat interface',
+                    'name' => 'No-Code Games',
+                    'description' => 'Create games instantly with AI-powered chat and JavaScript export',
                     'icon' => '/images/engines/gdevelop-icon.svg',
                     'features' => [
                         'No-code game creation',
                         'AI-powered chat interface',
-                        'HTML5 game export',
-                        'Mobile-friendly games',
-                        'Real-time preview'
+                        'JavaScript/HTML5 game export',
+                        'Instant preview in browser',
+                        'Mobile-friendly games'
                     ],
                     'available' => $this->isEngineAvailable('gdevelop'),
                     'requirements' => [
@@ -55,10 +37,47 @@ class EngineSelectionService
                         'No additional software needed'
                     ]
                 ],
+                'godot' => [
+                    'type' => 'godot',
+                    'name' => 'Godot',
+                    'description' => 'Open-source game engine with GDScript and C# support',
+                    'icon' => '/images/engines/godot-icon.svg',
+                    'features' => [
+                        '2D and 3D game development',
+                        'GDScript visual scripting',
+                        'C# programming support',
+                        'Cross-platform export',
+                        'Open source community'
+                    ],
+                    'available' => false,
+                    'requirements' => [
+                        'Godot Engine 4.0+',
+                        'Desktop application',
+                        'Windows, macOS, or Linux'
+                    ]
+                ],
+                'playcanvas' => [
+                    'type' => 'playcanvas',
+                    'name' => 'PlayCanvas',
+                    'description' => 'Web and mobile game development with instant preview',
+                    'icon' => '/images/engines/playcanvas-icon.svg',
+                    'features' => [
+                        'Web and mobile games',
+                        'Instant browser preview',
+                        'One-click publishing',
+                        'Touch-optimized controls',
+                        'Real-time collaboration'
+                    ],
+                    'available' => false,
+                    'requirements' => [
+                        'Modern web browser',
+                        'Internet connection'
+                    ]
+                ],
                 'unreal' => [
                     'type' => 'unreal',
                     'name' => 'Unreal Engine',
-                    'description' => 'Advanced 3D game development with Blueprint and C++ support',
+                    'description' => 'Advanced 3D game development with Blueprint visual scripting',
                     'icon' => '/images/engines/unreal-icon.svg',
                     'features' => [
                         'AAA game development',
@@ -67,10 +86,10 @@ class EngineSelectionService
                         'Advanced rendering',
                         'VR/AR support'
                     ],
-                    'available' => $this->isEngineAvailable('unreal'),
+                    'available' => false,
                     'requirements' => [
                         'Unreal Engine 5.0+',
-                        'SurrealPilot plugin installed',
+                        'SurrealPilot plugin',
                         'Windows or macOS'
                     ]
                 ]
@@ -84,23 +103,29 @@ class EngineSelectionService
 
             // Return basic engine list as fallback
             return [
+                'gdevelop' => [
+                    'type' => 'gdevelop',
+                    'name' => 'No-Code Games',
+                    'description' => 'Create games with AI-powered chat',
+                    'available' => true,
+                ],
+                'godot' => [
+                    'type' => 'godot',
+                    'name' => 'Godot',
+                    'description' => 'Open-source game engine',
+                    'available' => false,
+                ],
                 'playcanvas' => [
                     'type' => 'playcanvas',
                     'name' => 'PlayCanvas',
                     'description' => 'Web and mobile game development',
-                    'available' => true,
-                ],
-                'gdevelop' => [
-                    'type' => 'gdevelop',
-                    'name' => 'GDevelop',
-                    'description' => 'No-code game development',
-                    'available' => true,
+                    'available' => false,
                 ],
                 'unreal' => [
                     'type' => 'unreal',
                     'name' => 'Unreal Engine',
                     'description' => 'Advanced 3D game development',
-                    'available' => true,
+                    'available' => false,
                 ]
             ];
         }
@@ -242,7 +267,7 @@ class EngineSelectionService
             ]);
 
             // Fallback validation
-            return in_array($engineType, ['playcanvas', 'gdevelop', 'unreal']);
+            return in_array($engineType, ['gdevelop', 'godot', 'playcanvas', 'unreal']);
         }
     }
 
@@ -262,8 +287,9 @@ class EngineSelectionService
 
             // Fallback display names
             return match($engineType) {
+                'gdevelop' => 'No-Code Games',
+                'godot' => 'Godot',
                 'playcanvas' => 'PlayCanvas',
-                'gdevelop' => 'GDevelop',
                 'unreal' => 'Unreal Engine',
                 default => ucfirst($engineType)
             };
@@ -294,14 +320,15 @@ class EngineSelectionService
             return [
                 'type' => $engineType,
                 'name' => match($engineType) {
+                    'gdevelop' => 'No-Code Games',
+                    'godot' => 'Godot',
                     'playcanvas' => 'PlayCanvas',
-                    'gdevelop' => 'GDevelop',
                     'unreal' => 'Unreal Engine',
                     default => ucfirst($engineType)
                 },
                 'description' => 'Game development engine',
                 'icon' => '/images/engines/' . $engineType . '-icon.svg',
-                'available' => true,
+                'available' => $engineType === 'gdevelop', // Only No-Code Games is available
             ];
         }
     }
@@ -324,19 +351,23 @@ class EngineSelectionService
             // Check company plan restrictions
             $plan = $company->plan ?? 'starter';
             
-            // All plans can access PlayCanvas
-            if ($engineType === 'playcanvas') {
-                return true;
-            }
-
-            // All plans can access GDevelop
+            // All plans can access No-Code Games (GDevelop)
             if ($engineType === 'gdevelop') {
                 return true;
             }
 
-            // Unreal Engine might require higher plans in the future
+            // All plans can access PlayCanvas (when available)
+            if ($engineType === 'playcanvas') {
+                return true;
+            }
+
+            // All plans can access Godot (when available)
+            if ($engineType === 'godot') {
+                return true;
+            }
+
+            // All plans can access Unreal Engine (when available)
             if ($engineType === 'unreal') {
-                // For now, all plans can access Unreal Engine
                 return true;
             }
 
@@ -361,18 +392,22 @@ class EngineSelectionService
     {
         try {
             switch ($engineType) {
-                case 'playcanvas':
-                    // Check if PlayCanvas MCP server is available
-                    return $this->checkPlayCanvasAvailability();
-                
                 case 'gdevelop':
                     // Check if GDevelop is enabled and available
                     return $this->checkGDevelopAvailability();
-                
+
+                case 'godot':
+                    // Godot is not yet implemented
+                    return false;
+
+                case 'playcanvas':
+                    // Check if PlayCanvas MCP server is available
+                    return $this->checkPlayCanvasAvailability();
+
                 case 'unreal':
                     // Check if Unreal MCP server is available
                     return $this->checkUnrealAvailability();
-                
+
                 default:
                     return false;
             }

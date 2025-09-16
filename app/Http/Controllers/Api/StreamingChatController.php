@@ -168,9 +168,12 @@ class StreamingChatController extends Controller
     /**
      * Stream chat responses using Laravel Stream (POST method compatible with useStream hook)
      */
-    public function stream(Request $request): StreamedResponse
+    public function stream(Request $request): StreamedResponse|\Illuminate\Http\JsonResponse
     {
         $user = $request->user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
         $company = $user->currentCompany;
 
         // Get the message data from request
@@ -231,12 +234,15 @@ class StreamingChatController extends Controller
                 $prompt = $this->buildPromptWithContext($messages, $context, $engineType);
 
                 // Set default model/provider for the engine
-                $model = $engineType === 'playcanvas' ?
-                    config('ai.models.playcanvas', 'claude-sonnet-4-20250514') :
-                    config('ai.models.unreal', 'claude-sonnet-4-20250514');
+                $model = match($engineType) {
+                    'playcanvas' => config('ai.models.playcanvas', 'deepseek-chat'),
+                    'unreal' => config('ai.models.unreal', 'deepseek-chat'),
+                    'gdevelop' => config('ai.models.gdevelop', 'deepseek-chat'),
+                    default => config('ai.model', 'deepseek-chat')
+                };
 
                 config([
-                    'vizra-adk.default_provider' => 'anthropic',
+                    'vizra-adk.default_provider' => 'deepseek',
                     'vizra-adk.default_model' => $model,
                 ]);
 
@@ -353,9 +359,12 @@ class StreamingChatController extends Controller
         }
 
         // Add engine-specific context
-        $engineContext = $engineType === 'playcanvas' ?
-            "You are assisting with a PlayCanvas web game development project." :
-            "You are assisting with an Unreal Engine game development project.";
+        $engineContext = match($engineType) {
+            'playcanvas' => "You are assisting with a PlayCanvas web game development project.",
+            'unreal' => "You are assisting with an Unreal Engine game development project.",
+            'gdevelop' => "You are assisting with a GDevelop no-code game development project.",
+            default => "You are assisting with game development."
+        };
 
         return $engineContext . "\n\nConversation:\n" . $conversationHistory;
     }

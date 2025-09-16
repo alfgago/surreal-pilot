@@ -67,7 +67,7 @@ class WorkspacesController extends Controller
         // Base validation
         $rules = [
             'name' => 'required|string|max:255',
-            'engine_type' => 'required|string|in:playcanvas,gdevelop,unreal',
+            'engine_type' => 'required|string|in:gdevelop,godot,playcanvas,unreal',
         ];
 
         // Conditional template validation based on engine type
@@ -182,7 +182,7 @@ class WorkspacesController extends Controller
     public function getTemplates(Request $request)
     {
         $request->validate([
-            'engine_type' => 'required|string|in:playcanvas,gdevelop,unreal',
+            'engine_type' => 'required|string|in:gdevelop,godot,playcanvas,unreal',
         ]);
 
         $engineType = $request->input('engine_type');

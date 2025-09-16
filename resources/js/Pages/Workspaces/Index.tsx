@@ -41,10 +41,12 @@ export default function WorkspacesIndex({ workspaces, engines }: WorkspacesIndex
 
     const getEngineIcon = (engineType: string) => {
         switch (engineType) {
-            case 'playcanvas':
-                return <Monitor className="w-5 h-5 text-primary" />;
             case 'gdevelop':
                 return <Gamepad2 className="w-5 h-5 text-primary" />;
+            case 'godot':
+                return <Gamepad2 className="w-5 h-5 text-primary" />;
+            case 'playcanvas':
+                return <Monitor className="w-5 h-5 text-primary" />;
             case 'unreal':
                 return <Gamepad2 className="w-5 h-5 text-primary" />;
             default:
@@ -54,10 +56,12 @@ export default function WorkspacesIndex({ workspaces, engines }: WorkspacesIndex
 
     const getEngineColor = (engineType: string) => {
         switch (engineType) {
-            case 'playcanvas':
-                return 'bg-blue-100 text-blue-800 border-blue-200';
             case 'gdevelop':
                 return 'bg-green-100 text-green-800 border-green-200';
+            case 'godot':
+                return 'bg-orange-100 text-orange-800 border-orange-200';
+            case 'playcanvas':
+                return 'bg-blue-100 text-blue-800 border-blue-200';
             case 'unreal':
                 return 'bg-purple-100 text-purple-800 border-purple-200';
             default:
@@ -164,7 +168,7 @@ export default function WorkspacesIndex({ workspaces, engines }: WorkspacesIndex
                             </h3>
                             <p className="text-muted-foreground text-center mb-8 max-w-md">
                                 Create your first workspace to start building games with AI assistance. 
-                                Choose from GDevelop for no-code games, PlayCanvas for web/mobile games, or Unreal Engine for advanced 3D projects.
+                                Choose from No-Code Games for instant creation, PlayCanvas for web/mobile games, or Unreal Engine for advanced 3D projects.
                             </p>
                             <Link href="/workspaces/create">
                                 <Button size="lg">

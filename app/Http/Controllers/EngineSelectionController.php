@@ -37,7 +37,7 @@ class EngineSelectionController extends Controller
     public function select(Request $request)
     {
         $request->validate([
-            'engine_type' => 'required|string|in:playcanvas,unreal',
+            'engine_type' => 'required|string|in:gdevelop,godot,playcanvas,unreal',
         ]);
 
         $user = Auth::user();

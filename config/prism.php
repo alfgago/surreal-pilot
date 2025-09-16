@@ -12,7 +12,7 @@ return [
     |
     */
 
-    'default' => env('PRISM_DEFAULT_PROVIDER', 'openai'),
+    'default' => env('PRISM_DEFAULT_PROVIDER', 'deepseek'),
 
     /*
     |--------------------------------------------------------------------------
@@ -26,6 +26,7 @@ return [
     */
 
     'fallback_chain' => [
+        'deepseek',
         'openai',
         'anthropic',
         'gemini',
@@ -117,6 +118,21 @@ return [
                 'timeout' => 5,
             ],
         ],
+
+        'deepseek' => [
+            'driver' => 'deepseek',
+            'api_key' => env('DEEPSEEK_API_KEY'),
+            'base_url' => env('DEEPSEEK_BASE_URL', 'https://api.deepseek.com/v1'),
+            'timeout' => env('DEEPSEEK_TIMEOUT', 30),
+            'max_retries' => env('DEEPSEEK_MAX_RETRIES', 3),
+            'models' => [
+                'default' => env('DEEPSEEK_DEFAULT_MODEL', 'deepseek-chat'),
+                'available' => [
+                    'deepseek-chat',
+                    'deepseek-coder',
+                ],
+            ],
+        ],
     ],
 
     /*
@@ -164,6 +180,10 @@ return [
             'ollama' => [
                 'requests_per_minute' => env('OLLAMA_RPM', 30),
                 'tokens_per_minute' => env('OLLAMA_TPM', 10000),
+            ],
+            'deepseek' => [
+                'requests_per_minute' => env('DEEPSEEK_RPM', 60),
+                'tokens_per_minute' => env('DEEPSEEK_TPM', 120000),
             ],
         ],
     ],
